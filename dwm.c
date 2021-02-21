@@ -186,6 +186,7 @@ struct Monitor {
 	Monitor *next;
 	Window barwin;
 	const Layout *lt[2];
+	unsigned int alttag;
 	Pertag *pertag;
 };
 
@@ -310,6 +311,7 @@ static Monitor *systraytomon(Monitor *m);
 static int stackpos(const Arg *arg);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
+static void togglealttag();
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void togglescratch(const Arg *arg);
@@ -1068,24 +1070,31 @@ dirtomon(int dir)
 	return m;
 }
 
+
 int
 drawstatusbar(Monitor *m, int bh, char* stext) {
 	int ret, i, w, x, len;
   int stw = 0;
-  int sw = TEXTW("\ue0b2");
 	short isCode = 0;
 	char *text;
 	char *p;
+  char *head = "^C9^\ue0b3\ue0b2^B9^^C7^";
+  char *tail = "^C0^\ue0b2";
 	Clr oldbg, oldfg;
 
 	if(showsystray && m == systraytomon(m))
     stw = getsystraywidth();
 
-	len = strlen(stext) + 1 ;
-	if (!(text = (char*) malloc(sizeof(char)*len)))
+  stext += strlen("\ue0b3");
+	len = strlen(stext) + 1;
+	if (!(text = (char*) malloc(sizeof(char)*(len + strlen(head) + strlen(tail)))))
+	/* if (!(text = (char*) malloc(sizeof(char)*len))) */
 		die("malloc");
 	p = text;
-	memcpy(text, stext, len);
+	memcpy(text, head, strlen(head));
+	memcpy(text + strlen(head), stext, len);
+	memcpy(text + strlen(head) + len - 1, tail, strlen(tail) + 1);
+  /* text[len + strlen(end)] = 0; */
 
 	/* compute width of the status text */
 	w = 0;
@@ -1112,14 +1121,16 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 		isCode = 0;
 	text = p;
 
+  //old_w = MAX(old_w, w);
+
 	w += 2; /* 1px padding on both sides */
-	ret = x = m->ww - w - stw - sp;
+	ret = x = m->ww - w - stw - sp - lrpad;
 
 	drw_setscheme(drw, scheme[LENGTH(colors)]);
 	drw->scheme[ColFg] = scheme[SchemeNorm][ColFg];
 	drw->scheme[ColBg] = scheme[SchemeNorm][ColBg];
-	drw_rect(drw, x - sw, 0, w, bh, 1, 0);
-	//drw_rect(drw, 0, 0, m->ww, bh, 1, 0);
+	//drw_rect(drw, x - (old_w - w), 0, old_w, bh, 1, 1);
+	drw_rect(drw, 0, 0, m->ww, bh, 1, 1);
 	x++;
 
 	/* process status text */
@@ -1130,7 +1141,7 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 
 			text[i] = '\0';
 			w = TEXTW(text) - lrpad;
-			drw_text(drw, x, 0, w, bh, lrpad / 2 - 2, text, 0);
+			drw_text(drw, x, 0, w, bh, 0, text, 0);
 
 			x += w;
 
@@ -1191,12 +1202,8 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 
 	if (!isCode) {
 		w = TEXTW(text) - lrpad;
-		drw_text(drw, x, 0, w, bh, 0, text, 0);
+		drw_text(drw, x - 2, 0, w, bh, 0, text, 0);
 	}
-	drw_clr_create(drw, &drw->scheme[ColFg], termcolor[0]);
-	drw_text(drw, m->ww - w - stw - sw - sp, 0, sw * 2, bh, 0, "\ue0b2", 1);
-	drw_text(drw, m->ww - stw - sw - sp , 0, sw, bh, 0, "\ue0b2", 0);
-
 	drw_setscheme(drw, scheme[SchemeNorm]);
 	free(p);
 
@@ -1206,7 +1213,7 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 void
 drawbar(Monitor *m)
 {
-	int x, w, tw = 0, mw, ew = 0, stw = 0;
+	int x, w, tw = 0, mw, ew = 0, stw = 0, wdelta;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0, n = 0;
@@ -1238,8 +1245,10 @@ drawbar(Monitor *m)
 		continue;
 
 		w = TEXTW(tags[i]);
+		wdelta = selmon->alttag ? abs(TEXTW(tags[i]) - TEXTW(tagsalt[i])) / 2: 0;
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
-		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
+		//drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
+		drw_text(drw, x, 0, w, bh, lrpad / 2 - wdelta, (selmon->alttag ? tagsalt[i] : tags[i]), urg & 1 << i);
 		x += w;
 	}
 	w = blw = TEXTW(m->ltsymbol);
@@ -1248,14 +1257,6 @@ drawbar(Monitor *m)
 	//x = drw_text(drw, x, 0, bh / 2, bh, 0, "\ue0b0", 1);
 
 	if ((w = m->ww - tw - stw - x) > bh) {
-		/*if (m->sel) {
-			drw_setscheme(drw, scheme[m == selmon ? SchemeSel : SchemeNorm]);
-			drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
-			if (m->sel->isfloating)
-			drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
-			} else {
-			drw_setscheme(drw, scheme[SchemeNorm]);
-			drw_rect(drw, x, 0, w, bh, 1, 1);*/
 		if (n > 0) {
 			tw = TEXTW(m->sel->name) + lrpad;
 			mw = (tw >= w || n == 1) ? 0 : (w - tw) / (n - 1);
@@ -2548,6 +2549,13 @@ tagmon(const Arg *arg)
 }
 
 void
+togglealttag()
+{
+	selmon->alttag = !selmon->alttag;
+	drawbar(selmon);
+}
+
+void
 togglebar(const Arg *arg)
 {
 	unsigned int i;
@@ -3099,10 +3107,35 @@ updatesystray(void)
 void
 updatetitle(Client *c)
 {
-	if (!gettextprop(c->win, netatom[NetWMName], c->name, sizeof c->name))
-		gettextprop(c->win, XA_WM_NAME, c->name, sizeof c->name);
-	if (c->name[0] == '\0') /* hack to mark broken clients */
+  char temp[256];
+  int  size = 0;
+  int  i = 0;
+  int  dots = 0;
+	/* if (!gettextprop(c->win, netatom[NetWMName], c->name, sizeof c->name)) */
+	/* 	gettextprop(c->win, XA_WM_NAME, c->name, sizeof c->name); */
+	if (!gettextprop(c->win, netatom[NetWMName], temp, sizeof c->name))
+		gettextprop(c->win, XA_WM_NAME, temp, sizeof c->name);
+	if (temp[0] == '\0') {/* hack to mark broken clients */
 		strcpy(c->name, broken);
+    return;
+  }
+  while(temp[i++]);
+  i--;
+  while(i-- && temp[i] && temp[i] != '-');
+  i = MAX(i, 0);
+  if (i>0) {
+    temp[i] = '\0';
+    size = MIN(strlen(temp), maxtitle);
+    if (strlen(temp) > maxtitle)
+      dots = 1;
+    temp[i] = '-';
+    strncpy(c->name, temp, size);
+    if (dots) {
+      strcpy(c->name + size, "...");
+      size += 3;
+    }
+  }
+  strcpy(c->name + size, temp + i);
 }
 
 void

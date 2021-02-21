@@ -26,6 +26,7 @@ static void setgaps(int oh, int ov, int ih, int iv);
 /* Settings */
 static int enablegaps = 1;
 static int sp_old = sidepad;
+static int vp_old = vertpad;
 
 static void
 setgaps(int oh, int ov, int ih, int iv)
@@ -47,6 +48,8 @@ togglegaps(const Arg *arg)
 {
 	enablegaps = !enablegaps;
 	sp = (sp == 0 ? sp_old : 0);
+	vp = (vp == 0 ? vp_old : 0);
+	updatestatus();
 	arrange(NULL);
 }
 
@@ -54,7 +57,12 @@ static void
 defaultgaps(const Arg *arg)
 {
 	setgaps(gappoh, gappov, gappih, gappiv);
-	sp = sp_old = sidepad;
+	sp_old = sidepad;
+	vp_old = vertpad;
+	sp = sidepad * enablegaps;
+	vp = vertpad * enablegaps;
+
+	updatestatus();
 }
 
 static void
@@ -66,12 +74,20 @@ incrgaps(const Arg *arg)
 		selmon->gappih + arg->i,
 		selmon->gappiv + arg->i
 	);
-	if (sp <= selmon->gappih && arg->i < 0)
-		return ;
-	sp += arg->i;
-	if (sp < 0) sp = 0;
-	if (sp > sidepad) sp = sidepad;
-	sp_old = sp;
+	if (sp > selmon->gappih || arg->i >= 0){
+		sp += arg->i * enablegaps;
+		if (sp < 0) sp = 0;
+		if (sp > sidepad) sp = sidepad;
+		sp_old = sp;
+			updatestatus();
+	}
+	if (vp > selmon->gappih || arg->i >= 0){
+		vp += arg->i * enablegaps;
+		if (vp < 0) vp = 0;
+		if (vp > vertpad) vp = vertpad;
+		vp_old = vp;
+		updatestatus();
+	}
 }
 
 /* static void */
