@@ -1,2 +1,0 @@
-#!/bin/zsh
-sudo make clean install && { killall -q dwmblocks; setsid dwmblocks &}

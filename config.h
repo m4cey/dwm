@@ -23,8 +23,7 @@ static const int user_bh      = 0;       /* vertical padding of bar */
 static const int vertpad      = 8;       /* vertical padding of bar */
 static const int sidepad      = 16;       /* horizontal padding of bar */
 static const int maxtitle     = 30;
-static char *fonts[]          = { "Terminus:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true",
-                                  "FontAwesome:size=9:antialias=false"};
+static char *fonts[]          = { "Terminus:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=false"};
 static const char dmenufont[] = "Terminus:size=10";
 
 static char normbgcolor[]           = "#222222";
@@ -110,7 +109,7 @@ static const Rule rules[] = {
 /* layout(s) */
 static float mfact     = 0.5; /* factor of master area size [0.05..0.95] */
 static int nmaster     = 1;    /* number of clients in master area */
-static int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
+static int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
 static const int attachdirection = 3;    /* 0 default, 1 above, 2 aside, 3 below, 4 bottom, 5 top */
 #define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
 #include "vanitygaps.c"
