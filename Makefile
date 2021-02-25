@@ -23,7 +23,8 @@ dwm: ${OBJ}
 	${CC} -o $@ ${OBJ} ${LDFLAGS}
 
 clean:
-	rm -f dwm ${OBJ} dwm-${VERSION}.tar.gz *.orig *.rej
+	rm -f dwm ${OBJ} dwm-${VERSION}.tar.gz
+#*.orig *.rej
 
 dist: clean
 	mkdir -p dwm-${VERSION}
