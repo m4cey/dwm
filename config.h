@@ -22,7 +22,7 @@ static int topbar             = 1;        /* 0 means bottom bar */
 static const int user_bh      = 0;       /* vertical padding of bar */
 static const int vertpad      = 8;       /* vertical padding of bar */
 static const int sidepad      = 16;       /* horizontal padding of bar */
-static const int maxtitle     = 30;
+static const int maxtitle     = 15;
 static char *fonts[]          = { "Terminus:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=false"};
 static const char dmenufont[] = "Terminus:size=10";
 
@@ -94,16 +94,19 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title
 	*/
 	/* class    instance      title       	 tags mask    isfloating   isterminal  noswallow  monitor */
-	{ "Gimp",     NULL,       NULL,       	    1 << 8,       0,           0,         0,        -1 },
-	{ "spotify",  NULL,       NULL,       	    1 << 7,       0,           0,         0,        -1 },
-  { "Chromium", NULL,       NULL,           	1 << 2,       0,           0,         0,        -1 },
-  { "Firefox",  NULL,       NULL,           	1 << 2,       0,           0,         0,        -1 },
-	{ "discord",  NULL,       NULL,       	    1 << 1,       0,           0,         0,        -1 },
-	{ "Slack",    NULL,       NULL,       	    1 << 1,       0,           0,         0,        -1 },
-	{ TERMCLASS,  NULL,       NULL,       	    0,            0,           1,         0,        -1 },
-	{ NULL,       NULL,       "Event Tester",   0,            0,           0,         1,        -1 },
-	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,           1,         0,        -1 },
-	{ NULL,      "spcalc",    NULL,       	    SPTAG(1),     1,           1,         0,        -1 },
+	/* class    instance      title          tags mask    isfloating   isfreesize  isterminal noslwallow monitor */
+	{ "Gimp",     NULL,       NULL,       	    1 << 8,       0,         1,            0,         0,        -1 },
+	{ "spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
+  { "Steam",    NULL,       NULL,           	1 << 3,       0,         0,            0,         0,        -1 },
+  { "hl2_linux",NULL,       NULL,           	1 << 3,       0,         1,            0,         0,        -1 },
+  { "Chromium", NULL,       NULL,           	1 << 2,       0,         0,            0,         0,        -1 },
+  { "Firefox",  NULL,       NULL,           	1 << 2,       0,         0,            0,         0,        -1 },
+	{ "discord",  NULL,       NULL,       	    1 << 1,       0,         0,            0,         0,        -1 },
+	{ "Slack",    NULL,       NULL,       	    1 << 1,       0,         0,            0,         0,        -1 },
+	{ TERMCLASS,  NULL,       NULL,       	    0,            0,         0,            1,         0,        -1 },
+	{ NULL,       NULL,       "Event Tester",   0,            0,         0,            0,         1,        -1 },
+	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,         0,            1,         0,        -1 },
+	{ NULL,      "spcalc",    NULL,       	    SPTAG(1),     1,         0,            1,         0,        -1 },
 };
 
 /* layout(s) */
