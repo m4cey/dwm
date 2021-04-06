@@ -2576,19 +2576,19 @@ togglebar(const Arg *arg)
 	{
 		selmon->pertag->showbars[0] = selmon->showbar;
 	}
-	updatebarpos(selmon);
-	resizebarwin(selmon);
 	if (showsystray) {
 		XWindowChanges wc;
 		if (!selmon->showbar)
 			wc.y = -bh;
 		else if (selmon->showbar) {
-			wc.y = 0;
+			wc.y = vp;
 			if (!selmon->topbar)
-				wc.y = selmon->mh - bh;
+				wc.y = selmon->mh - bh + vp;
 		}
 		XConfigureWindow(dpy, systray->win, CWY, &wc);
 	}
+	updatebarpos(selmon);
+	resizebarwin(selmon);
 	arrange(selmon);
 }
 
