@@ -5,12 +5,12 @@
 #define TERMCLASS "St"
 
 /* appearance */
-static unsigned int borderpx  = 1;        /* border pixel of windows */
+static unsigned int borderpx  = 2;        /* border pixel of windows */
 static unsigned int snap      = 32;       /* snap pixel */
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
 static const unsigned int systrayspacing = 4;   /* systray spacing */
 static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
-static const int showsystray        = 1;     /* 0 means no systray */
+static const int showsystray  = 1;        /* 0 means no systray */
 static unsigned int gappih    = 16;       /* horiz inner gap between windows */
 static unsigned int gappiv    = 16;       /* vert inner gap between windows */
 static unsigned int gappoh    = 16;       /* horiz outer gap between windows and screen edge */
@@ -19,8 +19,8 @@ static int swallowfloating    = 0;        /* 1 means swallow floating windows by
 static int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static int showbar            = 1;        /* 0 means no bar */
 static int topbar             = 1;        /* 0 means bottom bar */
-static const int user_bh      = 0;       /* vertical padding of bar */
-static const int vertpad      = 8;       /* vertical padding of bar */
+static const int user_bh      = 0;        /* vertical padding of bar */
+static const int vertpad      = 8;        /* vertical padding of bar */
 static const int sidepad      = 16;       /* horizontal padding of bar */
 static const int maxtitle     = 15;
 static char *fonts[]          = { "Terminus:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=false"};
@@ -78,10 +78,14 @@ typedef struct {
 } Sp;
 const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "120x34", NULL };
 const char *spcmd2[] = {TERMINAL, "-n", "spcalc", "-f", "Terminus:size=14", "-g", "50x20", "-e", "bc", "-lq", NULL };
+const char *spcmd3[] = {TERMINAL, "-n", "ncmpcpp", "-g", "120x34", "-e", "ncmpcpp", NULL };
+const char *spcmd4[] = {TERMINAL, "-n", "htop", "-g", "120x34", "-e", "htop", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
 	{"spterm",      spcmd1},
 	{"spranger",    spcmd2},
+	{"ncmpcpp",     spcmd3},
+	{"htop",        spcmd4},
 };
 
 /* tagging */
@@ -107,6 +111,8 @@ static const Rule rules[] = {
 	{ NULL,       NULL,       "Event Tester",   0,            0,         0,            0,         1,        -1 },
 	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,         0,            1,         0,        -1 },
 	{ NULL,      "spcalc",    NULL,       	    SPTAG(1),     1,         0,            1,         0,        -1 },
+	{ NULL,      "ncmpcpp",   NULL,       	    SPTAG(2),     1,         0,            1,         0,        -1 },
+	{ NULL,      "htop",      NULL,       	    SPTAG(3),     1,         0,            1,         0,        -1 },
 };
 
 /* layout(s) */
@@ -192,7 +198,6 @@ static Key keys[] = {
 	STACKKEYS(MODKEY|ShiftMask,                push)
 	/* { MODKEY|ShiftMask,		XK_Escape,	spawn,	SHCMD("") }, */
 	{ MODKEY,			XK_grave,	spawn,	SHCMD("dmenuunicode") },
-	/* { MODKEY|ShiftMask,		XK_grave,	togglescratch,	SHCMD("") }, */
 	{ MODKEY|ShiftMask,       XK_n,     togglealttag,   {0} },
 	TAGKEYS(			XK_1,		0)
 	TAGKEYS(			XK_2,		1)
@@ -242,7 +247,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_a,		defaultgaps,	{0} },
 	{ MODKEY,			XK_s,		togglesticky,	{0} },
 	/* { MODKEY|ShiftMask,		XK_s,		spawn,		SHCMD("") }, */
-	{ MODKEY,			XK_d,		spawn,          SHCMD("dmenu_run") },
+	{ MODKEY,			XK_d,		spawn,          SHCMD("dmenu_run -l 10 -g 5") },
 	/* { MODKEY,			XK_d,		spawn,		SHCMD("") } }, */
 	{ MODKEY,			XK_f,		togglefullscr,	{0} },
 	{ MODKEY|ShiftMask,		XK_f,		setlayout,	{.v = &layouts[8]} },
@@ -252,9 +257,10 @@ static Key keys[] = {
 	/* J and K are automatically bound above in STACKEYS */
 	{ MODKEY,			XK_l,		setmfact,      	{.f = +0.05} },
 	{ MODKEY,			XK_semicolon,	shiftview,	{ .i = 1 } },
+	{ MODKEY,		  XK_m,	  togglescratch,	{.ui = 2} },
 	{ MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .i = 1 } },
 	{ MODKEY,			XK_apostrophe,	togglescratch,	{.ui = 1} },
-	/* { MODKEY|ShiftMask,		XK_apostrophe,	spawn,		SHCMD("") }, */
+	{ MODKEY|ShiftMask,		XK_apostrophe,	togglescratch,	{.ui = 3} },
 	{ MODKEY,			XK_Return,	spawn,		{.v = termcmd } },
 	{ MODKEY|ShiftMask,		XK_Return,	togglescratch,	{.ui = 0} },
 
@@ -268,7 +274,7 @@ static Key keys[] = {
 	{ MODKEY,			XK_b,		togglebar,	{0} },
 	/* { MODKEY|ShiftMask,		XK_b,		spawn,		SHCMD("") }, */
 	{ MODKEY,			XK_n,		spawn,		SHCMD(TERMINAL " -e nvim -c VimwikiIndex") },
-	{ MODKEY,			XK_m,		spawn,		SHCMD(TERMINAL " -e ncmpcpp") },
+	//{ MODKEY,			XK_m,		spawn,		SHCMD(TERMINAL " -e ncmpcpp") },
 	{ MODKEY|ShiftMask,		XK_m,		spawn,		SHCMD("pamixer -t; kill -44 $(pidof dwmblocks)") },
 	{ MODKEY,			XK_comma,	spawn,		SHCMD("playerctl previous") },
 	{ MODKEY|ShiftMask,		XK_comma,	spawn,		SHCMD("playerctl position 0") },
@@ -294,7 +300,7 @@ static Key keys[] = {
 	{ MODKEY,			XK_F7,		spawn,		SHCMD("td-toggle") },
 	{ MODKEY,			XK_F8,		spawn,		SHCMD("mw -Y") },
 	{ MODKEY,			XK_F9,		spawn,		SHCMD("dmenumount") },
-	{ MODKEY,			XK_F10,		spawn,		SHCMD("dmenuumount") },
+	{ MODKEY,			XK_F10,		spawn,		SHCMD("dmenuumount -l 5") },
 	{ MODKEY,			XK_F11,		spawn,		SHCMD("mpv --no-cache --no-osc --no-input-default-bindings --input-conf=/dev/null --title=webcam $(ls /dev/video[0,2,4,6,8] | tail -n 1)") },
 	/* { MODKEY,			XK_F12,		xrdb,		{.v = NULL } }, */
 	{ MODKEY,			XK_space,	zoom,		{0} },
