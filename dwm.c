@@ -1074,7 +1074,7 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 	short isCode = 0;
 	char *text;
 	char *p;
-  char *head = "^C9^\ue0b3\ue0b2^B9^^C7^";
+  char *head = "^C5^\ue0b3\ue0b2^B5^^C0^";
   char *tail = "^C0^\ue0b2";
   char *notail = "^C0^";
 	Clr oldbg, oldfg;
@@ -1237,6 +1237,8 @@ drawbar(Monitor *m)
 
 		w = TEXTW(tags[i]);
 		wdelta = selmon->alttag ? abs(TEXTW(tags[i]) - TEXTW(tagsalt[i])) / 2: 0;
+		drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[i+1]);
+		drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[i+1]);
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
 		drw_text(drw, x, 0, w, bh, lrpad / 2 - wdelta, (selmon->alttag ? tagsalt[i] : tags[i]), urg & 1 << i);
 		x += w;
@@ -1254,6 +1256,14 @@ drawbar(Monitor *m)
 			for (c = m->clients; c; c = c->next) {
 				if (!ISVISIBLE(c) || c == m->sel)
 					continue;
+        for (int j = 0; j < LENGTH(tags); j++) {
+          if (ISVISIBLEONTAG(c, 1 << j)) {
+            drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[j+1]);
+            drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[j+1]);
+            if (ISVISIBLEONTAG(c, 1 << j))
+            break;
+          }
+        }
 				tw = TEXTW(c->name);
 				if(tw < mw)
 					ew += (mw - tw);
