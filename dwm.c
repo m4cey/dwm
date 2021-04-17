@@ -58,8 +58,6 @@
 #define ISINC(X)                ((X) > 1000 && (X) < 3000)
 #define ISVISIBLEONTAG(C, T)    ((C->tags & T) || C->issticky)
 #define ISVISIBLE(C)            ISVISIBLEONTAG(C, C->mon->tagset[C->mon->seltags])
-//#define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]) || C->issticky)
-//#define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]))
 #define PREVSEL                 3000
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
@@ -1256,14 +1254,6 @@ drawbar(Monitor *m)
 			for (c = m->clients; c; c = c->next) {
 				if (!ISVISIBLE(c) || c == m->sel)
 					continue;
-        for (int j = 0; j < LENGTH(tags); j++) {
-          if (ISVISIBLEONTAG(c, 1 << j)) {
-            drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[j+1]);
-            drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[j+1]);
-            if (ISVISIBLEONTAG(c, 1 << j))
-            break;
-          }
-        }
 				tw = TEXTW(c->name);
 				if(tw < mw)
 					ew += (mw - tw);
@@ -1278,6 +1268,14 @@ drawbar(Monitor *m)
 			for (c = m->clients; c; c = c->next) {
 				if (!ISVISIBLE(c))
 					continue;
+        for (int j = 0; j < LENGTH(tags); j++) {
+          if (ISVISIBLEONTAG(c, 1 << j)) {
+            drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[j+1]);
+            drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[j+1]);
+            if (ISVISIBLEONTAG(c, 1 << j))
+            break;
+          }
+        }
 				tw = MIN(m->sel == c ? w : mw, TEXTW(c->name));
 
 				drw_setscheme(drw, scheme[m->sel == c ? SchemeSel : SchemeNorm]);
