@@ -346,6 +346,8 @@ static void zoom(const Arg *arg);
 static void load_xresources(void);
 static void resource_load(XrmDatabase db, char *name, enum resource_type rtype, void *dst);
 
+static int status2dtextlength(char* stext);
+
 static pid_t getparentprocess(pid_t p);
 static int isdescprocess(pid_t p, pid_t c);
 static Client *swallowingclient(Window w);
@@ -716,7 +718,8 @@ buttonpress(XEvent *e)
 				if ((unsigned char)text[i] < ' ') {
 					ch = text[i];
 					text[i] = '\0';
-					x += TEXTW(text) - lrpad;
+					//x += TEXTW(text) - lrpad;
+          x += status2dtextlength(text);
 					text[i] = ch;
 					text += i+1;
 					i = -1;
@@ -1202,6 +1205,55 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 	return ret;
 }
 
+int
+status2dtextlength(char* stext)
+{
+	int i, w, len;
+	short isCode = 0;
+	char *text;
+
+	len = strlen(stext) + 1;
+	if (!(text = (char*) malloc(sizeof(char)*len)))
+		die("malloc");
+
+	#if STATUSCMD_PATCH
+	copyvalidchars(text, stext);
+	#else
+	memcpy(text, stext, len);
+	#endif // STATUSCMD_PATCH
+
+	/* compute width of the status text */
+	w = 0;
+	i = -1;
+	while (text[++i]) {
+		if (text[i] == '^') {
+			if (!isCode) {
+				isCode = 1;
+				text[i] = '\0';
+				#if PANGO_PATCH
+				w += TEXTWM(text) - lrpad;
+				#else
+				w += TEXTW(text) - lrpad;
+				#endif // PANGO_PATCH
+				text[i] = '^';
+				if (text[++i] == 'f')
+					w += atoi(text + ++i);
+			} else {
+				isCode = 0;
+				text = text + i + 1;
+				i = -1;
+			}
+		}
+	}
+	if (!isCode)
+		#if PANGO_PATCH
+		w += TEXTWM(text) - lrpad;
+		#else
+		w += TEXTW(text) - lrpad;
+		#endif // PANGO_PATCH
+	return w;
+}
+
 void
 drawbar(Monitor *m)
 {
@@ -1235,8 +1287,8 @@ drawbar(Monitor *m)
 
 		w = TEXTW(tags[i]);
 		wdelta = selmon->alttag ? abs(TEXTW(tags[i]) - TEXTW(tagsalt[i])) / 2: 0;
-		drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[i+1]);
-		drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[i+1]);
+		drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[i % 6+1]);
+		drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[i % 6+1]);
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
 		drw_text(drw, x, 0, w, bh, lrpad / 2 - wdelta, (selmon->alttag ? tagsalt[i] : tags[i]), urg & 1 << i);
 		x += w;
@@ -1270,8 +1322,8 @@ drawbar(Monitor *m)
 					continue;
         for (int j = 0; j < LENGTH(tags); j++) {
           if (ISVISIBLEONTAG(c, 1 << j)) {
-            drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[j+1]);
-            drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[j+1]);
+            drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[j % 6+1]);
+            drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[j % 6+1]);
             if (ISVISIBLEONTAG(c, 1 << j))
             break;
           }

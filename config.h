@@ -78,7 +78,7 @@ typedef struct {
 } Sp;
 const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "120x34", NULL };
 const char *spcmd2[] = {TERMINAL, "-n", "spcalc", "-f", "Terminus:size=14", "-g", "50x20", "-e", "bc", "-lq", NULL };
-const char *spcmd3[] = {TERMINAL, "-n", "cmus", "-g", "120x34", "-e", "cmus", NULL };
+const char *spcmd3[] = {TERMINAL, "-n", "cmus", "-g", "120x34", "-e", "cmusd", "-q", NULL };
 const char *spcmd4[] = {TERMINAL, "-n", "htop", "-g", "120x34", "-e", "htop", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
@@ -100,6 +100,7 @@ static const Rule rules[] = {
 	/* class    instance      title       	 tags mask    isfloating   isterminal  noswallow  monitor */
 	/* class    instance      title          tags mask    isfloating   isfreesize  isterminal noslwallow monitor */
 	{ "Gimp",     NULL,       NULL,       	    1 << 8,       0,         1,            0,         0,        -1 },
+	{ "Spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
 	{ "spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
   { "Steam",    NULL,       NULL,           	1 << 3,       0,         0,            0,         0,        -1 },
   { "hl2_linux",NULL,       NULL,           	1 << 3,       0,         1,            0,         0,        -1 },
@@ -274,7 +275,7 @@ static Key keys[] = {
 	{ MODKEY,			XK_b,		togglebar,	{0} },
 	/* { MODKEY|ShiftMask,		XK_b,		spawn,		SHCMD("") }, */
 	{ MODKEY,			XK_n,		spawn,		SHCMD(TERMINAL " -e nvim -c VimwikiIndex") },
-	{ MODKEY|ShiftMask,		XK_m,		spawn,		SHCMD("pamixer -t; kill -44 $(pidof dwmblocks)") },
+	{ MODKEY|ControlMask,		XK_m,		spawn,		SHCMD("pamixer -t; kill -44 $(pidof dwmblocks)") },
 	{ MODKEY,			XK_comma,	spawn,		SHCMD("playerctl previous; kill -44 $(pidof dwmblocks)") },
 	{ MODKEY|ShiftMask,		XK_comma,	spawn,		SHCMD("playerctl position 0") },
 	{ MODKEY,			XK_period,	spawn,		SHCMD("playerctl next; kill -44 $(pidof dwmblocks)") },
