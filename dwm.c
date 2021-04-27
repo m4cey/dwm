@@ -1075,24 +1075,15 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 	short isCode = 0;
 	char *text;
 	char *p;
-  char *head = "^C5^\ue0b3\ue0b2^B5^^C0^";
-  char *tail = "^C0^\ue0b2";
-  char *notail = "^C0^";
 	Clr oldbg, oldfg;
 
 	if(showsystray && m == systraytomon(m))
     stw = getsystraywidth();
-  if (!showsystray || !systray->icons)
-    tail = notail;
-
-  stext += strlen("\ue0b3");
 	len = strlen(stext) + 1;
-	if (!(text = (char*) malloc(sizeof(char)*(len + strlen(head) + strlen(tail)))))
+	if (!(text = (char*) malloc(sizeof(char) * len)))
 		die("malloc");
 	p = text;
-	memcpy(text, head, strlen(head));
-	memcpy(text + strlen(head), stext, len);
-	memcpy(text + strlen(head) + len - 1, tail, strlen(tail) + 1);
+	memcpy(text, stext, len);
 
 	/* compute width of the status text */
 	w = 0;
@@ -1121,6 +1112,7 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 
 	w += 2; /* 1px padding on both sides */
 	ret = x = m->ww - w - stw - sp - lrpad;
+
 
 	drw_setscheme(drw, scheme[LENGTH(colors)]);
 	drw->scheme[ColFg] = scheme[SchemeNorm][ColFg];
@@ -1196,8 +1188,9 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 	}
 
 	if (!isCode) {
-		w = TEXTW(text) - lrpad;
-		drw_text(drw, x - 2, 0, w, bh, 0, text, 0);
+		//w = TEXTW(stext) - lrpad;
+    w = status2dtextlength(stext);
+		drw_text(drw, x, 0, w, bh, 0, text, 0);
 	}
 	drw_setscheme(drw, scheme[SchemeNorm]);
 	free(p);
@@ -1268,7 +1261,8 @@ drawbar(Monitor *m)
 
 	/* draw status first so it can be overdrawn by tags later */
 	if (m == selmon) { /* status is only drawn on selected monitor */
-		tw = m->ww - drawstatusbar(m, bh, stext);
+    drawstatusbar(m, bh, stext);
+		tw = status2dtextlength(stext);
 	}
 
 	resizebarwin(m);
@@ -1297,10 +1291,10 @@ drawbar(Monitor *m)
 	drw_setscheme(drw, scheme[SchemeNorm]);
 	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
 
-	if ((w = m->ww - tw - stw - x) > bh) {
+	if ((w = m->ww - tw - stw - x - lrpad) > bh) {
 		if (n > 0) {
 			tw = TEXTW(m->sel->name) + lrpad;
-			mw = (tw >= w || n == 1) ? 0 : (w - tw) / (n - 1);
+			mw = (tw >= w || n == 1 || !fancytitlebar) ? 0 : (w - tw) / (n - 1);
 
 			i = 0;
 			for (c = m->clients; c; c = c->next) {
@@ -1312,7 +1306,6 @@ drawbar(Monitor *m)
 				else
 					i++;
 			}
-      w -= 2 * sp;
 
 			if (i > 0)
 				mw += ew / i;
@@ -1328,32 +1321,17 @@ drawbar(Monitor *m)
             break;
           }
         }
-				tw = MIN(m->sel == c ? w : mw, TEXTW(c->name));
+        tw = MIN(m->sel == c ? w : mw, TEXTW(c->name));
 
 				drw_setscheme(drw, scheme[m->sel == c ? SchemeSel : SchemeNorm]);
-        if (m->sel == c)
-        x = drw_text(drw, x, 0, bh / 2, bh, 0, "\ue0b0", 0);
-        else
-        x = drw_text(drw, x, 0, bh / 2, bh, 0, "\ue0b1", 0);
 				if (tw > 0) /* trap special handling of 0 in drw_text */
 					drw_text(drw, x, 0, tw, bh, lrpad / 2, c->name, 0);
-        /* just doing my thing here, don't mind me */
-        if (m->sel == c)
-        drw_text(drw, x + tw - bh / 2, 0, bh / 2, bh, 0, "\ue0b0", 1);
-
 				if (c->isfloating)
 					drw_rect(drw, x + boxs, boxs, boxw, boxw, c->isfixed, 0);
 				x += tw;
 				w -= tw;
 			}
-		  drw_setscheme(drw, scheme[SchemeNorm]);
-      drw_text(drw, x, 0, bh / 2, bh, 0, "\ue0b1", 0);
 		}
-		drw_setscheme(drw, scheme[SchemeNorm]);
-    if (m->sel == NULL)
-		drw_rect(drw, x, 0, w, bh, 1, 1);
-    else
-		drw_rect(drw, x + bh / 2, 0, w, bh, 1, 1);
 	}
 	drw_map(drw, m->barwin, 0, 0, m->ww - stw, bh);
 }
@@ -2852,7 +2830,6 @@ updatebars(void)
 		if (showsystray && m == systraytomon(m))
 			w -= getsystraywidth();
 		m->barwin = XCreateWindow(dpy, root, m->wx + sp, m->by + vp, w - 2 * sp, bh, 0, DefaultDepth(dpy, screen),
-		//m->barwin = XCreateWindow(dpy, root, m->wx + sp, m->by + vp, m->ww - 2 * sp, bh, 0, DefaultDepth(dpy, screen),
 				CopyFromParent, DefaultVisual(dpy, screen),
 				CWOverrideRedirect|CWBackPixmap|CWEventMask, &wa);
 		XDefineCursor(dpy, m->barwin, cursor[CurNormal]->cursor);
@@ -3184,35 +3161,10 @@ updatesystray(void)
 void
 updatetitle(Client *c)
 {
-  char temp[256];
-  int  size = 0;
-  int  i = 0;
-  int  dots = 0;
-	/* if (!gettextprop(c->win, netatom[NetWMName], c->name, sizeof c->name)) */
-	/* 	gettextprop(c->win, XA_WM_NAME, c->name, sizeof c->name); */
-	if (!gettextprop(c->win, netatom[NetWMName], temp, sizeof c->name))
-		gettextprop(c->win, XA_WM_NAME, temp, sizeof c->name);
-	if (temp[0] == '\0') {/* hack to mark broken clients */
+	if (!gettextprop(c->win, netatom[NetWMName], c->name, sizeof c->name))
+		gettextprop(c->win, XA_WM_NAME, c->name, sizeof c->name);
+	if (c->name[0] == '\0') /* hack to mark broken clients */
 		strcpy(c->name, broken);
-    return;
-  }
-  while(temp[i++]);
-  i--;
-  while(i-- && temp[i] && temp[i] != '-');
-  i = MAX(i, 0);
-  if (i>0) {
-    temp[i] = '\0';
-    size = MIN(strlen(temp), maxtitle);
-    if (strlen(temp) > maxtitle)
-      dots = 1;
-    temp[i] = '-';
-    strncpy(c->name, temp, size);
-    if (dots) {
-      strcpy(c->name + size, "...");
-      size += 3;
-    }
-  }
-  strcpy(c->name + size, temp + i);
 }
 
 void

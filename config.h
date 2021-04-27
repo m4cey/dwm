@@ -7,7 +7,9 @@
 /* appearance */
 static unsigned int borderpx  = 2;        /* border pixel of windows */
 static unsigned int snap      = 32;       /* snap pixel */
+static unsigned int fancytitlebar      = 0;       /* snap pixel */
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
+
 static const unsigned int systrayspacing = 4;   /* systray spacing */
 static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
 static const int showsystray  = 1;        /* 0 means no systray */
@@ -19,10 +21,9 @@ static int swallowfloating    = 0;        /* 1 means swallow floating windows by
 static int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static int showbar            = 1;        /* 0 means no bar */
 static int topbar             = 1;        /* 0 means bottom bar */
-static const int user_bh      = 0;        /* vertical padding of bar */
+static const int user_bh      = 18;        /* vertical padding of bar */
 static const int vertpad      = 8;        /* vertical padding of bar */
 static const int sidepad      = 16;       /* horizontal padding of bar */
-static const int maxtitle     = 15;
 static char *fonts[]          = { "Terminus:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=false"};
 static const char dmenufont[] = "Terminus:size=10";
 
