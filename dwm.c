@@ -1320,6 +1320,8 @@ drawbar(Monitor *m)
             break;
           }
         }
+        if (mw == 0)
+          w = m->ww - status2dtextlength(stext) - stw - x - lrpad - sp;
         tw = MIN(m->sel == c ? w : mw, TEXTW(c->name));
 
 				drw_setscheme(drw, scheme[m->sel == c ? SchemeSel : SchemeNorm]);
