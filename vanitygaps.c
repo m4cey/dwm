@@ -25,8 +25,11 @@ static void setgaps(int oh, int ov, int ih, int iv);
 
 /* Settings */
 static int enablegaps = 1;
-static int sp_old = sidepad;
-static int vp_old = vertpad;
+static int enableigaps = 1;
+static int oht;
+static int ovt;
+static int iht;
+static int ivt;
 
 static void
 setgaps(int oh, int ov, int ih, int iv)
@@ -44,50 +47,41 @@ setgaps(int oh, int ov, int ih, int iv)
 }
 
 static void
+defaultgaps(const Arg *arg)
+{
+	setgaps(gappoh, gappov, gappih, gappiv);
+	updatestatus();
+}
+
+static void
 togglegaps(const Arg *arg)
 {
-	enablegaps = !enablegaps;
-	sp = (sp == 0 ? sp_old : 0);
-	vp = (vp == 0 ? vp_old : 0);
+	//enablegaps = !enablegaps;
+	enableigaps = !enableigaps;
+	if (enableigaps)
+		setgaps(oht, ovt, iht, ivt);
+	else {
+		oht = selmon-> gappoh;
+		ovt = selmon-> gappov;
+		iht = selmon-> gappih;
+		ivt = selmon-> gappiv;
+		setgaps(gappoh, gappov, 0, 0);
+	}
 	updatestatus();
 	arrange(NULL);
 }
 
 static void
-defaultgaps(const Arg *arg)
-{
-	setgaps(gappoh, gappov, gappih, gappiv);
-	sp_old = sidepad;
-	vp_old = vertpad;
-	sp = sidepad * enablegaps;
-	vp = vertpad * enablegaps;
-
-	updatestatus();
-}
-
-static void
 incrgaps(const Arg *arg)
 {
+	if (selmon->gappoh + arg->i < gappoh)
+		return;
 	setgaps(
 		selmon->gappoh + arg->i,
 		selmon->gappov + arg->i,
 		selmon->gappih + arg->i,
 		selmon->gappiv + arg->i
 	);
-	if (sp > selmon->gappih || arg->i >= 0){
-		sp += arg->i * enablegaps;
-		if (sp < 0) sp = 0;
-		if (sp > sidepad) sp = sidepad;
-		sp_old = sp;
-			updatestatus();
-	}
-	if (vp > selmon->gappih || arg->i >= 0){
-		vp += arg->i * enablegaps;
-		if (vp < 0) vp = 0;
-		if (vp > vertpad) vp = vertpad;
-		vp_old = vp;
-		updatestatus();
-	}
 }
 
 /* static void */
@@ -564,4 +558,61 @@ tile(Monitor *m)
 			resize(c, sx, sy, sw - (2*c->bw), (sh / sfacts) + ((i - m->nmaster) < srest ? 1 : 0) - (2*c->bw), 0);
 			sy += HEIGHT(c) + ih;
 		}
+}
+
+static void
+gaplessgrid(Monitor *m) {
+	unsigned int n, cols, rows, cn, rn, i, cx, cy, cw, ch;
+	int mx, my, mw, mh;
+	Client *c;
+
+	int oh, ov, ih, iv;
+	getgaps(m, &oh, &ov, &ih, &iv, &n);
+
+	cx = mx = m->wx + ov;
+	cy = my = m->wy + oh;
+	mw = m->ww - 2*ov;
+	mh = m->wh - 2*oh;
+
+
+	//for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++) ;
+	if(n == 0)
+		return;
+
+	/* grid dimensions */
+	for(cols = 0; cols <= n/2; cols++)
+		if(cols*cols >= n)
+			break;
+	if(n == 5) /* set layout against the general calculation: not 1:2:2, but 2:3 */
+		cols = 2;
+	rows = n/cols;
+
+	/* window geometries */
+	if (m->nmaster && n > m->nmaster) {
+		/* mh = (mh - ih); */
+		cy = my + mh + ih;
+		cx = mx + mw + iv;
+	}
+	cw = cols ? ((mw + iv) / cols) - iv : mw;
+	cn = 0; /* current column number */
+	rn = 0; /* current row number */
+
+	for(i = 0, c = nexttiled(m->clients); c; i++, c = nexttiled(c->next)) {
+		cy = cx = 0;
+		if(i/rows + 1 > cols - n%cols)
+			rows = n/cols + 1;
+		ch = rows ? ((mh + ih) / rows) - ih : mh;
+		cx = mx + cn*cw;
+		cy = my + rn*ch;
+		if (cn > 0)
+			cx += iv * cn;
+		if (rn > 0)
+			cy += ih * rn;
+		resize(c, cx, cy, cw - 2 * c->bw, ch - 2 * c->bw, False);
+		rn++;
+		if(rn >= rows) {
+			rn = 0;
+			cn++;
+		}
+	}
 }

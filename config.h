@@ -21,11 +21,15 @@ static int swallowfloating    = 0;        /* 1 means swallow floating windows by
 static int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static int showbar            = 1;        /* 0 means no bar */
 static int topbar             = 1;        /* 0 means bottom bar */
-static const int user_bh      = 18;        /* vertical padding of bar */
+static const int user_bh      = 20;        /* vertical padding of bar */
 static const int vertpad      = 8;        /* vertical padding of bar */
 static const int sidepad      = 16;       /* horizontal padding of bar */
 static char *fonts[]          = { "Terminus:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=false"};
 static const char dmenufont[] = "Terminus:size=10";
+
+static const char autostartblocksh[] = "autostart_blocking.sh";
+static const char autostartsh[] = "autostart.sh";
+static const char dwmdir[] = "dwm";
 
 static char normbgcolor[]           = "#222222";
 static char normbordercolor[]       = "#444444";
@@ -78,7 +82,7 @@ typedef struct {
 	const void *cmd;
 } Sp;
 const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "120x34", NULL };
-const char *spcmd2[] = {TERMINAL, "-n", "spcalc", "-f", "Terminus:size=14", "-g", "50x20", "-e", "bc", "-lq", NULL };
+const char *spcmd2[] = {TERMINAL, "-n", "spcalc", "-f", "Terminus:size=14", "-g", "50x20", "-e", "calc", NULL };
 const char *spcmd3[] = {TERMINAL, "-n", "cmus", "-g", "120x34", "-e", "cmusd", "-q", NULL };
 const char *spcmd4[] = {TERMINAL, "-n", "htop", "-g", "120x34", "-e", "htop", NULL };
 static Sp scratchpads[] = {
@@ -121,7 +125,7 @@ static const Rule rules[] = {
 static float mfact     = 0.5; /* factor of master area size [0.05..0.95] */
 static int nmaster     = 1;    /* number of clients in master area */
 static int resizehints = 0;    /* 1 means respect size hints in tiled resizals */
-static const int attachdirection = 3;    /* 0 default, 1 above, 2 aside, 3 below, 4 bottom, 5 top */
+static const int attachdirection = 4;    /* 0 default, 1 above, 2 aside, 3 below, 4 bottom, 5 top */
 #define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
 #include "vanitygaps.c"
 static const Layout layouts[] = {
@@ -138,6 +142,7 @@ static const Layout layouts[] = {
 	{ "|M|",	centeredmaster },		/* Master in middle, slaves on sides */
 	{ ">M>",	centeredfloatingmaster },	/* Same but master floats */
 
+  { "###",  gaplessgrid },
 	{ "><>",	NULL },			/* no layout function means floating behavior */
 	{ NULL,		NULL },
 };
@@ -234,14 +239,15 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_u,		setlayout,	{.v = &layouts[5]} }, /* monocle */
 	{ MODKEY,			XK_i,		setlayout,	{.v = &layouts[6]} }, /* centeredmaster */
 	{ MODKEY|ShiftMask,		XK_i,		setlayout,	{.v = &layouts[7]} }, /* centeredfloatingmaster */
+	{ MODKEY,		  XK_e,		setlayout,	{.v = &layouts[8]} }, /* centeredfloatingmaster */
 	{ MODKEY,			XK_o,		incnmaster,     {.i = +1 } },
 	{ MODKEY|ShiftMask,		XK_o,		incnmaster,     {.i = -1 } },
-	{ MODKEY,			XK_p,			spawn,		SHCMD("myplayerctl play-pause; kill -44 $(pidof dwmblocks)") },
-	{ MODKEY|ShiftMask,		XK_p,			spawn,		SHCMD("myplayerctl pause; kill -44 $(pidof dwmblocks)") },
-	{ MODKEY,			XK_bracketleft,		spawn,		SHCMD("myplayerctl position 10-") },
-	{ MODKEY|ShiftMask,		XK_bracketleft,		spawn,		SHCMD("myplayerctl position 60-") },
-	{ MODKEY,			XK_bracketright,	spawn,		SHCMD("myplayerctl position 10-") },
-	{ MODKEY|ShiftMask,		XK_bracketright,	spawn,		SHCMD("myplayerctl position 60+") },
+	{ MODKEY,			XK_p,			spawn,		SHCMD("playerctl play-pause; pkill -RTMIN+14 dwmblocks") },
+	{ MODKEY|ShiftMask,		XK_p,			spawn,		SHCMD("playerctld shift; pkill -RTMIN+14 dwmblocks") },
+	{ MODKEY,			XK_bracketleft,		spawn,		SHCMD("playerctl position 10-") },
+	{ MODKEY|ShiftMask,		XK_bracketleft,		spawn,		SHCMD("playerctl position 60-") },
+	{ MODKEY,			XK_bracketright,	spawn,		SHCMD("playerctl position 10-") },
+	{ MODKEY|ShiftMask,		XK_bracketright,	spawn,		SHCMD("playerctl position 60+") },
 	{ MODKEY,			XK_backslash,		view,		{0} },
 	/* { MODKEY|ShiftMask,		XK_backslash,		spawn,		SHCMD("") }, */
 
@@ -277,10 +283,10 @@ static Key keys[] = {
 	/* { MODKEY|ShiftMask,		XK_b,		spawn,		SHCMD("") }, */
 	{ MODKEY,			XK_n,		spawn,		SHCMD(TERMINAL " -e nvim -c VimwikiIndex") },
 	{ MODKEY|ControlMask,		XK_m,		spawn,		SHCMD("pamixer -t; kill -44 $(pidof dwmblocks)") },
-	{ MODKEY,			XK_comma,	spawn,		SHCMD("myplayerctl previous; kill -44 $(pidof dwmblocks)") },
-	{ MODKEY|ShiftMask,		XK_comma,	spawn,		SHCMD("myplayerctl position 0") },
-	{ MODKEY,			XK_period,	spawn,		SHCMD("myplayerctl next; kill -44 $(pidof dwmblocks)") },
-	{ MODKEY|ShiftMask,		XK_period,	spawn,		SHCMD("myplayerctl loop Playlist") },
+	{ MODKEY,			XK_comma,	spawn,		SHCMD("playerctl previous; pkill -RTMIN+14 dwmblocks") },
+	{ MODKEY|ShiftMask,		XK_comma,	spawn,		SHCMD("playerctl position 0") },
+	{ MODKEY,			XK_period,	spawn,		SHCMD("playerctl next; pkill -RTMIN+14 dwmblocks") },
+	{ MODKEY|ShiftMask,		XK_period,	spawn,		SHCMD("playerctl loop Playlist") },
 
 	{ MODKEY,			XK_Left,	focusmon,	{.i = -1 } },
 	{ MODKEY|ShiftMask,		XK_Left,	tagmon,		{.i = -1 } },
@@ -317,13 +323,13 @@ static Key keys[] = {
 	{ 0, XF86XK_AudioMute,		spawn,		SHCMD("pamixer -t; kill -44 $(pidof dwmblocks)") },
 	{ 0, XF86XK_AudioRaiseVolume,	spawn,		SHCMD("pamixer --allow-boost -i 3; kill -44 $(pidof dwmblocks)") },
 	{ 0, XF86XK_AudioLowerVolume,	spawn,		SHCMD("pamixer --allow-boost -d 3; kill -44 $(pidof dwmblocks)") },
-	{ 0, XF86XK_AudioPrev,		spawn,		SHCMD("myplayerctl previous; kill -44 $(pidof dwmblocks)") },
-	{ 0, XF86XK_AudioNext,		spawn,		SHCMD("myplayerctl next; kill -44 $(pidof dwmblocks)") },
-	{ 0, XF86XK_AudioPause,		spawn,		SHCMD("myplayerctl pause; kill -44 $(pidof dwmblocks)") },
-	{ 0, XF86XK_AudioPlay,		spawn,		SHCMD("myplayerctl play; kill -44 $(pidof dwmblocks)") },
-	{ 0, XF86XK_AudioStop,		spawn,		SHCMD("myplayerctl stop; kill -44 $(pidof dwmblocks)") },
-	{ 0, XF86XK_AudioRewind,	spawn,		SHCMD("myplayerctl position 10-") },
-	{ 0, XF86XK_AudioForward,	spawn,		SHCMD("myplayerctl position 10+") },
+	{ 0, XF86XK_AudioPrev,		spawn,		SHCMD("playerctl previous; kill -44 $(pidof dwmblocks)") },
+	{ 0, XF86XK_AudioNext,		spawn,		SHCMD("playerctl next; kill -44 $(pidof dwmblocks)") },
+	{ 0, XF86XK_AudioPause,		spawn,		SHCMD("playerctl pause; kill -44 $(pidof dwmblocks)") },
+	{ 0, XF86XK_AudioPlay,		spawn,		SHCMD("playerctl play; kill -44 $(pidof dwmblocks)") },
+	{ 0, XF86XK_AudioStop,		spawn,		SHCMD("playerctl stop; kill -44 $(pidof dwmblocks)") },
+	{ 0, XF86XK_AudioRewind,	spawn,		SHCMD("playerctl position 10-") },
+	{ 0, XF86XK_AudioForward,	spawn,		SHCMD("playerctl position 10+") },
 	{ 0, XF86XK_AudioMedia,		spawn,		SHCMD(TERMINAL " -e cmus") },
 	{ 0, XF86XK_AudioMicMute,	spawn,		SHCMD("pactl set-source-mute @DEFAULT_SOURCE@ toggle") },
 	{ 0, XF86XK_PowerOff,		spawn,		SHCMD("sysact") },
