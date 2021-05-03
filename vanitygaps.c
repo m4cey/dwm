@@ -574,8 +574,6 @@ gaplessgrid(Monitor *m) {
 	mw = m->ww - 2*ov;
 	mh = m->wh - 2*oh;
 
-
-	//for(n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++) ;
 	if(n == 0)
 		return;
 
@@ -588,8 +586,7 @@ gaplessgrid(Monitor *m) {
 	rows = n/cols;
 
 	/* window geometries */
-	if (m->nmaster && n > m->nmaster) {
-		/* mh = (mh - ih); */
+	if (n > 1) {
 		cy = my + mh + ih;
 		cx = mx + mw + iv;
 	}
