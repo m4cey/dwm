@@ -3176,7 +3176,7 @@ updatesystray(void)
   unsigned int y = m->by + vp;
 	unsigned int w = 1;
 
-	drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[3]);
+	drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[9]);
   if (!showsystray)
     return;
 	if (!systray) {

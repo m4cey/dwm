@@ -24,8 +24,8 @@ static int topbar             = 1;        /* 0 means bottom bar */
 static const int user_bh      = 20;        /* vertical padding of bar */
 static const int vertpad      = 8;        /* vertical padding of bar */
 static const int sidepad      = 16;       /* horizontal padding of bar */
-static char *fonts[]          = { "Terminus:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=false"};
-static const char dmenufont[] = "Terminus:size=10";
+static char *fonts[]          = { "Dina:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=true"};
+static const char dmenufont[] = "Dina:size=10";
 
 static const char autostartblocksh[] = "autostart_blocking.sh";
 static const char autostartsh[] = "autostart.sh";
@@ -85,12 +85,14 @@ const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "120x34", NULL };
 const char *spcmd2[] = {TERMINAL, "-n", "spcalc", "-f", "Terminus:size=14", "-g", "50x20", "-e", "calc", NULL };
 const char *spcmd3[] = {TERMINAL, "-n", "cmus", "-g", "120x34", "-e", "cmusd", "-q", NULL };
 const char *spcmd4[] = {TERMINAL, "-n", "htop", "-g", "120x34", "-e", "htop", NULL };
+const char *spcmd5[] = {"ra", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
-	{"spterm",      spcmd1},
-	{"spranger",    spcmd2},
+	{"spterm",   spcmd1},
+	{"spcalc",   spcmd2},
 	{"cmus",     spcmd3},
-	{"htop",        spcmd4},
+	{"htop",     spcmd4},
+	{"spranger", spcmd5},
 };
 
 /* tagging */
@@ -117,8 +119,9 @@ static const Rule rules[] = {
 	{ NULL,       NULL,       "Event Tester",   0,            0,         0,            0,         1,        -1 },
 	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,         0,            1,         0,        -1 },
 	{ NULL,      "spcalc",    NULL,       	    SPTAG(1),     1,         0,            1,         0,        -1 },
-	{ NULL,      "cmus",   NULL,       	    SPTAG(2),     1,         0,            1,         0,        -1 },
+	{ NULL,      "cmus",      NULL,       	    SPTAG(2),     1,         0,            1,         0,        -1 },
 	{ NULL,      "htop",      NULL,       	    SPTAG(3),     1,         0,            1,         0,        -1 },
+	{ NULL,      "ranger",    NULL,       	    SPTAG(4),     1,         0,            1,         0,        -1 },
 };
 
 /* layout(s) */
@@ -229,7 +232,7 @@ static Key keys[] = {
 	{ MODKEY,			XK_q,		killclient,	{0} },
 	{ MODKEY|ShiftMask,		XK_q,		spawn,		SHCMD("sysact") },
 	{ MODKEY|ShiftMask,		XK_w,		spawn,		SHCMD("$BROWSER") },
-	{ MODKEY,			XK_r,		spawn,		SHCMD(TERMINAL " -e ranger") },
+	/* { MODKEY,			XK_r,		spawn,		SHCMD(TERMINAL " -e ranger") }, */
 	{ MODKEY|ShiftMask,		XK_r,		spawn,		SHCMD(TERMINAL " -e htop") },
 	{ MODKEY,			XK_t,		setlayout,	{.v = &layouts[0]} }, /* tile */
 	{ MODKEY|ShiftMask,		XK_t,		setlayout,	{.v = &layouts[1]} }, /* bstack */
@@ -266,6 +269,7 @@ static Key keys[] = {
 	{ MODKEY,			XK_l,		setmfact,      	{.f = +0.05} },
 	{ MODKEY,			XK_semicolon,	shiftview,	{ .i = 1 } },
 	{ MODKEY,		  XK_m,	  togglescratch,	{.ui = 2} },
+	{ MODKEY,		  XK_r,	  togglescratch,	{.ui = 4} },
 	{ MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .i = 1 } },
 	{ MODKEY,			XK_apostrophe,	togglescratch,	{.ui = 1} },
 	{ MODKEY|ShiftMask,		XK_apostrophe,	togglescratch,	{.ui = 3} },
