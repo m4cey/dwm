@@ -13,6 +13,7 @@ static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows sel
 static const unsigned int systrayspacing = 4;   /* systray spacing */
 static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
 static const int showsystray  = 1;        /* 0 means no systray */
+static const int alttags      = 1;        /* 1 means labeled tags by default  */
 static unsigned int gappih    = 16;       /* horiz inner gap between windows */
 static unsigned int gappiv    = 16;       /* vert inner gap between windows */
 static unsigned int gappoh    = 16;       /* horiz outer gap between windows and screen edge */
