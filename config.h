@@ -25,7 +25,7 @@ static int showbar            = 1;        /* 0 means no bar */
 static int topbar             = 1;        /* 0 means bottom bar */
 static const int user_bh      = 24;        /* height of bar */
 static const int vertpad      = 0;        /* vertical padding of bar */
-static const int sidepad      = 24;       /* horizontal padding of bar */
+static const int sidepad      = 0;       /* horizontal padding of bar */
 static char *fonts[]          = { "Dina:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=true"};
 static const char dmenufont[] = "Dina:size=10";
 

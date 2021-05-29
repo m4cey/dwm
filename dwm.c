@@ -1114,6 +1114,7 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 	else
 		isCode = 0;
 	text = p;
+	w = status2dtextlength(stext);
 
 	w += 2; /* 1px padding on both sides */
 	ret = x = m->ww - w - stw - sidepad - lrpad;
