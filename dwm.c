@@ -1116,7 +1116,7 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 	text = p;
 
 	w += 2; /* 1px padding on both sides */
-	ret = x = m->ww - w - stw - sp - lrpad;
+	ret = x = m->ww - w - stw - sidepad - lrpad;
 
 
 	drw_setscheme(drw, scheme[LENGTH(colors)]);
@@ -1255,10 +1255,10 @@ status2dtextlength(char* stext)
 void
 drawbar(Monitor *m)
 {
-	int x, w, tw = 0, mw, ew = 0, stw = 0;
+	int x, w, tw = 0, mw, ew = 0, stw = 0, clr;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
-	unsigned int i, occ = 0, urg = 0, n = 0;
+	unsigned int i, occ = 0, urg = 0, n = 0, k = 0;
 	Client *c;
 	char tagdisp[64];
 	char *masterclientontag[LENGTH(tags)];
@@ -1266,6 +1266,7 @@ drawbar(Monitor *m)
 	if(showsystray && m == systraytomon(m))
 		stw = getsystraywidth();
 
+	drw_clr_create(drw, &scheme[SchemeNorm][ColBg], termcolor[0]);
 	/* draw status first so it can be overdrawn by tags later */
 	if (m == selmon) { /* status is only drawn on selected monitor */
     drawstatusbar(m, bh, stext);
@@ -1295,7 +1296,7 @@ drawbar(Monitor *m)
 	for (i = 0; i < LENGTH(tags); i++) {
 		/* do not draw vacant tags */
 		if (!(occ & 1 << i || m->tagset[m->seltags] & 1 << i))
-		continue;
+		  continue;
 
 		w = TEXTW(tags[i]);
     if (selmon->alttag) {
@@ -1306,8 +1307,10 @@ drawbar(Monitor *m)
       masterclientontag[i] = tagdisp;
       tagw[i] = w = TEXTW(masterclientontag[i]);
     }
-		drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[i % 6+1]);
-		drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[i % 6+1]);
+    clr = (k % 2) ? 1 : 6;
+    k++;
+		drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[clr]);
+		drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[clr]);
 		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
     if (selmon->alttag)
 		  drw_text(drw, x, 0, w, bh, lrpad / 2, masterclientontag[i], urg & 1 << i);
@@ -1315,6 +1318,8 @@ drawbar(Monitor *m)
 		  drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
 		x += w;
 	}
+  drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[2]);
+  drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[2]);
 	w = blw = TEXTW(m->ltsymbol);
 	drw_setscheme(drw, scheme[SchemeNorm]);
 	x = drw_text(drw, x, 0, w, bh, lrpad / 2, m->ltsymbol, 0);
@@ -1337,18 +1342,9 @@ drawbar(Monitor *m)
 
 			if (i > 0)
 				mw += ew / i;
-
 			for (c = m->clients; c; c = c->next) {
 				if (!ISVISIBLE(c))
 					continue;
-        for (int j = 0; j < LENGTH(tags); j++) {
-          if (ISVISIBLEONTAG(c, 1 << j)) {
-            drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[j % 6+1]);
-            drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[j % 6+1]);
-            if (ISVISIBLEONTAG(c, 1 << j))
-            break;
-          }
-        }
         if (mw == 0)
           w = m->ww - status2dtextlength(stext) - stw - x - lrpad - sp;
         tw = MIN(m->sel == c ? w : mw, TEXTW(c->name));
@@ -1422,6 +1418,7 @@ focus(Client *c)
 		detachstack(c);
 		attachstack(c);
 		grabbuttons(c, 1);
+	  XSetWindowBorderWidth(dpy, c->win, c->bw);
 		XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
 		setfocus(c);
 	} else {
@@ -1978,13 +1975,13 @@ movemouse(const Arg *arg)
 			nx = ocx + (ev.xmotion.x - x);
 			ny = ocy + (ev.xmotion.y - y);
 			if (abs(selmon->wx - nx) < snap)
-				nx = selmon->wx;
+				nx = selmon->wx + gappoh;
 			else if (abs((selmon->wx + selmon->ww) - (nx + WIDTH(c))) < snap)
-				nx = selmon->wx + selmon->ww - WIDTH(c);
+				nx = selmon->wx + selmon->ww - WIDTH(c) - gappoh;
 			if (abs(selmon->wy - ny) < snap)
-				ny = selmon->wy;
+				ny = selmon->wy + gappov;
 			else if (abs((selmon->wy + selmon->wh) - (ny + HEIGHT(c))) < snap)
-				ny = selmon->wy + selmon->wh - HEIGHT(c);
+				ny = selmon->wy + selmon->wh - HEIGHT(c) - gappov;
 			if (!c->isfloating && selmon->lt[selmon->sellt]->arrange
 			&& (abs(nx - c->x) > snap || abs(ny - c->y) > snap))
 				togglefloating(NULL);
@@ -3134,6 +3131,7 @@ void
 updatestatus(void)
 {
 	if (!gettextprop(root, XA_WM_NAME, rawstext, sizeof(rawstext)))
+		/* strcpy(stext, "h4mmer dwm-"VERSION" "); */
 		strcpy(stext, "dwm-"VERSION);
 	else
 		copyvalidchars(stext, rawstext);
@@ -3201,16 +3199,17 @@ updatesystray(void)
 	Monitor *m = systraytomon(NULL);
 	unsigned int x = m->mx + m->mw;
   unsigned int y = m->by + vp;
-	unsigned int w = 1;
+	unsigned int w = 1, j = 0;
+  char *class;
 
-	drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[9]);
+	/* drw_clr_create(drw, &scheme[SchemeNorm][ColBg], termcolor[9]); */
   if (!showsystray)
     return;
 	if (!systray) {
 		/* init systray */
 		if (!(systray = (Systray *)calloc(1, sizeof(Systray))))
 			die("fatal: could not malloc() %u bytes\n", sizeof(Systray));
-		systray->win = XCreateSimpleWindow(dpy, root, x, y, w, bh, 0, 0, scheme[SchemeNorm][ColFg].pixel);
+		systray->win = XCreateSimpleWindow(dpy, root, x, y, w, bh, 0, 0, scheme[SchemeNorm][ColBg].pixel);
 		wa.event_mask        = ButtonPressMask | ExposureMask;
 		wa.override_redirect = True;
 		wa.background_pixel  = scheme[SchemeNorm][ColFg].pixel;
@@ -3233,12 +3232,35 @@ updatesystray(void)
 	}
 	for (w = 0, i = systray->icons; i; i = i->next) {
 		/* make sure the background color stays the same */
-		wa.background_pixel  = scheme[SchemeNorm][ColFg].pixel;
+    /* hehe no, I don't think I will */
+		wa.background_pixel  = scheme[SchemeSel][ColBg].pixel;
 		XChangeWindowAttributes(dpy, i->win, CWBackPixel, &wa);
 		XMapRaised(dpy, i->win);
 		w += systrayspacing;
 		i->x = w;
-		XMoveResizeWindow(dpy, i->win, i->x, 0, i->w, i->h);
+
+    if(textsystray) {
+      XClassHint ch = { NULL, NULL };
+      if (!XGetClassHint(dpy, i->win, &ch) || !ch.res_class)
+        class = strdup("?");
+      else
+        class = ch.res_class;
+
+      if (strlen(class) > 2)
+        class[2] = '\0';
+      if (lcaselbl)
+        class[0] = tolower(class[0]);
+      drw_clr_create(drw, &drw->scheme[ColBg], termcolor[++j % 2 + 2]);
+      drw_clr_create(drw, &drw->scheme[ColFg], termcolor[0]);
+      drw_text(drw, 0, 0, i->w, bh, lrpad/4, class, 0);
+      drw_map(drw, i->win, 0, 0, i->w, bh);
+      if (class)
+        XFree(class);
+      if (ch.res_name)
+        XFree(ch.res_name);
+    }
+
+    XMoveResizeWindow(dpy, i->win, i->x, 0, i->w, i->h);
 		w += i->w;
 		if (i->mon != m)
 			i->mon = m;
@@ -3257,7 +3279,7 @@ updatesystray(void)
     XUnmapSubwindows(dpy, systray->win);
   }
 	/* redraw background */
-	XSetForeground(dpy, drw->gc, scheme[SchemeNorm][ColFg].pixel);
+	XSetForeground(dpy, drw->gc, scheme[SchemeNorm][ColBg].pixel);
 	XFillRectangle(dpy, systray->win, drw->gc, 0, 0, w, bh);
 	XSync(dpy, False);
 }

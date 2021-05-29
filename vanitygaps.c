@@ -61,10 +61,10 @@ togglegaps(const Arg *arg)
 	if (enableigaps)
 		setgaps(oht, ovt, iht, ivt);
 	else {
-		oht = selmon-> gappoh;
-		ovt = selmon-> gappov;
-		iht = selmon-> gappih;
-		ivt = selmon-> gappiv;
+		oht = selmon->gappoh;
+		ovt = selmon->gappov;
+		iht = selmon->gappih;
+		ivt = selmon->gappiv;
 		setgaps(gappoh, gappov, 0, 0);
 	}
 	updatestatus();
@@ -74,11 +74,15 @@ togglegaps(const Arg *arg)
 static void
 incrgaps(const Arg *arg)
 {
-	if (selmon->gappoh + arg->i < gappoh)
-		return;
+	int gv, gh;
+
+	gv = selmon->gappov + arg->i;
+	gh = selmon->gappoh + arg->i;
+	gv = (gv < gappov) || (gv > selmon->gappiv) ? gappov: gv;
+	gh = (gh < gappoh) || (gh > selmon->gappih) ? gappoh: gh;
 	setgaps(
-		selmon->gappoh + arg->i,
-		selmon->gappov + arg->i,
+		gh,
+		gv,
 		selmon->gappih + arg->i,
 		selmon->gappiv + arg->i
 	);
@@ -95,16 +99,22 @@ incrgaps(const Arg *arg)
 /* 	); */
 /* } */
 
-/* static void */
-/* incrogaps(const Arg *arg) */
-/* { */
-/* 	setgaps( */
-/* 		selmon->gappoh + arg->i, */
-/* 		selmon->gappov + arg->i, */
-/* 		selmon->gappih, */
-/* 		selmon->gappiv */
-/* 	); */
-/* } */
+static void
+incrogaps(const Arg *arg)
+{
+	int gv, gh;
+
+	gv = selmon->gappov + arg->i;
+	gh = selmon->gappoh + arg->i;
+	/* gv = (gv < gappov) ? gappov: gv; */
+	/* gh = (gh < gappoh) ? gappoh: gh; */
+	setgaps(
+		gh,
+		gv,
+		selmon->gappih,
+		selmon->gappiv
+	);
+}
 
 /* static void */
 /* incrohgaps(const Arg *arg) */

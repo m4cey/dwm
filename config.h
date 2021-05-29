@@ -6,25 +6,26 @@
 
 /* appearance */
 static unsigned int borderpx  = 2;        /* border pixel of windows */
-static unsigned int snap      = 32;       /* snap pixel */
-static unsigned int fancytitlebar      = 1;       /* snap pixel */
+static unsigned int snap      = 16;       /* snap pixel */
+static unsigned int fancytitlebar      = 1;       /* multi titles */
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
 
-static const unsigned int systrayspacing = 4;   /* systray spacing */
+static const unsigned int systrayspacing = 0;   /* systray spacing */
 static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
 static const int showsystray  = 1;        /* 0 means no systray */
+static const int textsystray  = 1;        /* 1 means no icons */
 static const int alttags      = 1;        /* 1 means labeled tags by default  */
 static unsigned int gappih    = 16;       /* horiz inner gap between windows */
 static unsigned int gappiv    = 16;       /* vert inner gap between windows */
-static unsigned int gappoh    = 16;       /* horiz outer gap between windows and screen edge */
-static unsigned int gappov    = 16;       /* vert outer gap between windows and screen edge */
+static unsigned int gappoh    = 24;       /* horiz outer gap between windows and screen edge */
+static unsigned int gappov    = 24;       /* vert outer gap between windows and screen edge */
 static int swallowfloating    = 0;        /* 1 means swallow floating windows by default */
 static int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static int showbar            = 1;        /* 0 means no bar */
 static int topbar             = 1;        /* 0 means bottom bar */
-static const int user_bh      = 20;        /* vertical padding of bar */
-static const int vertpad      = 8;        /* vertical padding of bar */
-static const int sidepad      = 16;       /* horizontal padding of bar */
+static const int user_bh      = 24;        /* height of bar */
+static const int vertpad      = 0;        /* vertical padding of bar */
+static const int sidepad      = 24;       /* horizontal padding of bar */
 static char *fonts[]          = { "Dina:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=true"};
 static const char dmenufont[] = "Dina:size=10";
 
@@ -84,15 +85,15 @@ typedef struct {
 } Sp;
 const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "120x34", NULL };
 const char *spcmd2[] = {TERMINAL, "-n", "spcalc", "-f", "Terminus:size=14", "-g", "50x20", "-e", "calc", NULL };
-const char *spcmd3[] = {TERMINAL, "-n", "cmus", "-g", "120x34", "-e", "cmusd", "-q", NULL };
-const char *spcmd4[] = {TERMINAL, "-n", "htop", "-g", "120x34", "-e", "htop", NULL };
-const char *spcmd5[] = {"ra", NULL };
+const char *spcmd3[] = {TERMINAL, "-n", "cmus", "-g", "120x34", "-e", "cmus", NULL };
+const char *spcmd4[] = {TERMINAL, "-n", "top", "-g", "120x34", "-e", "bpytop", NULL };
+const char *spcmd5[] = {TERMINAL, "-n", "ranger", "-g", "120x34", "-e", "ranger", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
 	{"spterm",   spcmd1},
 	{"spcalc",   spcmd2},
 	{"cmus",     spcmd3},
-	{"htop",     spcmd4},
+	{"top",     spcmd4},
 	{"spranger", spcmd5},
 };
 
@@ -114,7 +115,7 @@ static const Rule rules[] = {
 	{ "Spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
 	{ "spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
   { "Steam",    NULL,       NULL,           	1 << 3,       0,         0,            0,         0,        -1 },
-  { "hl2_linux",NULL,       NULL,           	1 << 3,       0,         1,            0,         0,        -1 },
+  { "hl2_linux",NULL,       NULL,           	1 << 3,       0,         0,            0,         0,        -1 },
   { "Brave-browser",
                 NULL,       NULL,           	1 << 2,       0,         0,            0,         0,        -1 },
 	{ "discord",  NULL,       NULL,       	    1 << 1,       0,         0,            0,         0,        -1 },
@@ -124,7 +125,7 @@ static const Rule rules[] = {
 	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,         0,            1,         0,        -1 },
 	{ NULL,      "spcalc",    NULL,       	    SPTAG(1),     1,         0,            1,         0,        -1 },
 	{ NULL,      "cmus",      NULL,       	    SPTAG(2),     1,         0,            1,         0,        -1 },
-	{ NULL,      "htop",      NULL,       	    SPTAG(3),     1,         0,            1,         0,        -1 },
+	{ NULL,      "top",      NULL,       	    SPTAG(3),     1,         0,            1,         0,        -1 },
 	{ NULL,      "ranger",    NULL,       	    SPTAG(4),     1,         0,            1,         0,        -1 },
 };
 
@@ -237,7 +238,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_q,		spawn,		SHCMD("sysact") },
 	{ MODKEY|ShiftMask,		XK_w,		spawn,		SHCMD("$BROWSER") },
 	/* { MODKEY,			XK_r,		spawn,		SHCMD(TERMINAL " -e ranger") }, */
-	{ MODKEY|ShiftMask,		XK_r,		spawn,		SHCMD(TERMINAL " -e htop") },
+	/* { MODKEY|ShiftMask,		XK_r,		spawn,		SHCMD(TERMINAL " -e top") }, */
 	{ MODKEY,			XK_t,		setlayout,	{.v = &layouts[0]} }, /* tile */
 	{ MODKEY|ShiftMask,		XK_t,		setlayout,	{.v = &layouts[1]} }, /* bstack */
 	{ MODKEY,			XK_y,		setlayout,	{.v = &layouts[2]} }, /* spiral */
@@ -281,8 +282,9 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,		XK_Return,	togglescratch,	{.ui = 0} },
 
 	{ MODKEY,			XK_z,		incrgaps,	{.i = +3 } },
-	/* { MODKEY|ShiftMask,		XK_z,		spawn,		SHCMD("") }, */
 	{ MODKEY,			XK_x,		incrgaps,	{.i = -3 } },
+	{ MODKEY|ShiftMask,			XK_z,		incrogaps,	{.i = +3 } },
+	{ MODKEY|ShiftMask,			XK_x,		incrogaps,	{.i = -3 } },
 	/* { MODKEY|ShiftMask,		XK_x,		spawn,		SHCMD("") }, */
 	/* { MODKEY,			XK_c,		spawn,		SHCMD("") }, */
 	/* { MODKEY|ShiftMask,		XK_c,		spawn,		SHCMD("") }, */
