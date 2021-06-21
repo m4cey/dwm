@@ -13,7 +13,7 @@ static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows sel
 static const unsigned int systrayspacing = 0;   /* systray spacing */
 static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
 static const int showsystray  = 1;        /* 0 means no systray */
-static const int textsystray  = 1;        /* 1 means no icons */
+static const int textsystray  = 1;        /* 1 means use text instead of icons for system trays */
 static const int alttags      = 1;        /* 1 means labeled tags by default  */
 static unsigned int gappih    = 16;       /* horiz inner gap between windows */
 static unsigned int gappiv    = 16;       /* vert inner gap between windows */
@@ -25,7 +25,7 @@ static int showbar            = 1;        /* 0 means no bar */
 static int topbar             = 1;        /* 0 means bottom bar */
 static const int user_bh      = 24;        /* height of bar */
 static const int vertpad      = 0;        /* vertical padding of bar */
-static const int sidepad      = 0;       /* horizontal padding of bar */
+static const int sidepad      = 24;       /* horizontal padding of bar */
 static char *fonts[]          = { "Dina:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=true"};
 static const char dmenufont[] = "Dina:size=10";
 
@@ -125,7 +125,7 @@ static const Rule rules[] = {
 	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,         0,            1,         0,        -1 },
 	{ NULL,      "spcalc",    NULL,       	    SPTAG(1),     1,         0,            1,         0,        -1 },
 	{ NULL,      "cmus",      NULL,       	    SPTAG(2),     1,         0,            1,         0,        -1 },
-	{ NULL,      "top",      NULL,       	    SPTAG(3),     1,         0,            1,         0,        -1 },
+	{ NULL,      "top",       NULL,       	    SPTAG(3),     1,         0,            1,         0,        -1 },
 	{ NULL,      "ranger",    NULL,       	    SPTAG(4),     1,         0,            1,         0,        -1 },
 };
 
@@ -250,7 +250,7 @@ static Key keys[] = {
 	{ MODKEY,		  XK_e,		setlayout,	{.v = &layouts[8]} }, /* centeredfloatingmaster */
 	{ MODKEY,			XK_o,		incnmaster,     {.i = +1 } },
 	{ MODKEY|ShiftMask,		XK_o,		incnmaster,     {.i = -1 } },
-	{ MODKEY,			XK_p,			spawn,		SHCMD("playerctl play-pause; pkill -RTMIN+14 dwmblocks") },
+	{ MODKEY,			XK_p,			        spawn,		SHCMD("playerctl play-pause; sleep 0.4; pkill -RTMIN+14 dwmblocks") },
 	{ MODKEY|ShiftMask,		XK_p,			spawn,		SHCMD("playerctld shift; pkill -RTMIN+14 dwmblocks") },
 	{ MODKEY,			XK_bracketleft,		spawn,		SHCMD("playerctl position 10-") },
 	{ MODKEY|ShiftMask,		XK_bracketleft,		spawn,		SHCMD("playerctl position 60-") },
@@ -266,7 +266,7 @@ static Key keys[] = {
 	{ MODKEY,			XK_d,		spawn,          SHCMD("dmenu_run -l 10 -g 5") },
 	{ MODKEY|ShiftMask,			XK_d,		spawn,SHCMD("j4-dmenu-desktop --dmenu=\"dmenu -l 10 -g 5\"") },
 	{ MODKEY,			XK_f,		togglefullscr,	{0} },
-	{ MODKEY|ShiftMask,		XK_f,		setlayout,	{.v = &layouts[8]} },
+	{ MODKEY|ShiftMask,		XK_f,		setlayout,	{.v = &layouts[9]} },
 	{ MODKEY,			XK_g,		shiftview,	{ .i = -1 } },
 	{ MODKEY|ShiftMask,		XK_g,		shifttag,	{ .i = -1 } },
 	{ MODKEY,			XK_h,		setmfact,	{.f = -0.05} },
@@ -286,8 +286,8 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,			XK_z,		incrogaps,	{.i = +3 } },
 	{ MODKEY|ShiftMask,			XK_x,		incrogaps,	{.i = -3 } },
 	/* { MODKEY|ShiftMask,		XK_x,		spawn,		SHCMD("") }, */
-	/* { MODKEY,			XK_c,		spawn,		SHCMD("") }, */
-	/* { MODKEY|ShiftMask,		XK_c,		spawn,		SHCMD("") }, */
+	{ MODKEY,			XK_c,		spawn,		SHCMD("xcmenuctrl") },
+	{ MODKEY|ShiftMask,		XK_c,		spawn,		SHCMD("netm_dmenu") },
 	/* V is automatically bound above in STACKKEYS */
 	{ MODKEY,			XK_b,		togglebar,	{0} },
 	/* { MODKEY|ShiftMask,		XK_b,		spawn,		SHCMD("") }, */
@@ -318,7 +318,7 @@ static Key keys[] = {
 	{ MODKEY,			XK_F8,		spawn,		SHCMD("mw -Y") },
 	{ MODKEY,			XK_F9,		spawn,		SHCMD("dmenumount") },
 	{ MODKEY,			XK_F10,		spawn,		SHCMD("dmenuumount -l 5") },
-	{ MODKEY,			XK_F11,		spawn,		SHCMD("mpv --no-cache --no-osc --no-input-default-bindings --input-conf=/dev/null --title=webcam $(ls /dev/video[0,2,4,6,8] | tail -n 1)") },
+	{ MODKEY,			XK_F11,		spawn,		SHCMD("mpv --no-cache --no-osc --no-input-default-bindings --vf=hflip --input-conf=/dev/null --title=webcam $(ls /dev/video[0,2,4,6,8] | tail -n 1)") },
 	/* { MODKEY,			XK_F12,		xrdb,		{.v = NULL } }, */
 	{ MODKEY,			XK_space,	zoom,		{0} },
 	{ MODKEY|ShiftMask,		XK_space,	togglefloating,	{0} },

@@ -330,6 +330,7 @@ static int updategeom(void);
 static void updatenumlockmask(void);
 static void updatesizehints(Client *c);
 static void updatestatus(void);
+static int drawtrayicons(void);
 static void updatesystray(void);
 static void updatesystrayicongeom(Client *i, int w, int h);
 static void updatesystrayiconstate(Client *i, XPropertyEvent *ev);
@@ -1114,10 +1115,8 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 	else
 		isCode = 0;
 	text = p;
-	w = status2dtextlength(stext);
 
-	w += 2; /* 1px padding on both sides */
-	ret = x = m->ww - w - stw - sidepad - lrpad;
+	ret = x = m->ww - w - stw - sp - lrpad;
 
 
 	drw_setscheme(drw, scheme[LENGTH(colors)]);
@@ -1194,7 +1193,7 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 	}
 
 	if (!isCode) {
-		//w = TEXTW(stext) - lrpad;
+		/* w = TEXTW(stext) - lrpad; */
     w = status2dtextlength(stext);
 		drw_text(drw, x, 0, w, bh, 0, text, 0);
 	}
@@ -1350,9 +1349,12 @@ drawbar(Monitor *m)
           w = m->ww - status2dtextlength(stext) - stw - x - lrpad - sp;
         tw = MIN(m->sel == c ? w : mw, TEXTW(c->name));
 
-				drw_setscheme(drw, scheme[m->sel == c ? SchemeSel : SchemeNorm]);
+				/* drw_setscheme(drw, scheme[m->sel == c ? SchemeSel : SchemeNorm]); */
+				drw_setscheme(drw, scheme[SchemeNorm]);
 				if (tw > 0) /* trap special handling of 0 in drw_text */
 					drw_text(drw, x, 0, tw, bh, lrpad / 2, c->name, 0);
+        if (m->sel == c)
+          drw_rect(drw, x, bh - borderpx, tw, borderpx, 1, 0);
 				if (c->isfloating)
 					drw_rect(drw, x + boxs, boxs, boxw, boxw, c->isfixed, 0);
 				x += tw;
@@ -2128,6 +2130,7 @@ removesystrayicon(Client *i)
 	for (ii = &systray->icons; *ii && *ii != i; ii = &(*ii)->next);
 	if (ii)
 		*ii = i->next;
+  drawtrayicons();
 	free(i);
 }
 
@@ -3132,8 +3135,8 @@ void
 updatestatus(void)
 {
 	if (!gettextprop(root, XA_WM_NAME, rawstext, sizeof(rawstext)))
-		/* strcpy(stext, "h4mmer dwm-"VERSION" "); */
-		strcpy(stext, "dwm-"VERSION);
+		strcpy(stext, "mace's dwm-"VERSION" ");
+		/* strcpy(stext, "dwm-"VERSION); */
 	else
 		copyvalidchars(stext, rawstext);
 	drawbar(selmon);
@@ -3189,6 +3192,49 @@ updatesystrayiconstate(Client *i, XPropertyEvent *ev)
 		return;
 	sendevent(i->win, xatom[Xembed], StructureNotifyMask, CurrentTime, code, 0,
 			systray->win, XEMBED_EMBEDDED_VERSION);
+  drawtrayicons();
+}
+
+int
+drawtrayicons(void)
+{
+  Client *i;
+	Monitor *m = systraytomon(NULL);
+	unsigned int w = 1, j = 0;
+  char *class;
+
+  drw_clr_create(drw, &drw->scheme[ColFg], termcolor[0]);
+	for (w = 0, i = systray->icons; i; i = i->next) {
+		XMapRaised(dpy, i->win);
+		w += systrayspacing;
+		i->x = w;
+
+    if(textsystray) {
+      XClassHint ch = { NULL, NULL };
+      if (!XGetClassHint(dpy, i->win, &ch) || !ch.res_class)
+        class = strdup("?");
+      else
+        class = ch.res_class;
+
+      if (strlen(class) > 2)
+        class[2] = '\0';
+      if (lcaselbl)
+        class[0] = tolower(class[0]);
+      drw_clr_create(drw, &drw->scheme[ColBg], termcolor[(j++ % 2) * 5 + 1]);
+      drw_text(drw, 0, 0, i->w, bh, lrpad/4, class, 0);
+      drw_map(drw, i->win, 0, 0, i->w, bh);
+      if (class)
+        XFree(class);
+      if (ch.res_name)
+        XFree(ch.res_name);
+    }
+
+    XMoveResizeWindow(dpy, i->win, i->x, 0, i->w, i->h);
+		w += i->w;
+		if (i->mon != m)
+			i->mon = m;
+	}
+  return w;
 }
 
 void
@@ -3196,14 +3242,11 @@ updatesystray(void)
 {
 	XSetWindowAttributes wa;
 	XWindowChanges wc;
-	Client *i;
 	Monitor *m = systraytomon(NULL);
 	unsigned int x = m->mx + m->mw;
   unsigned int y = m->by + vp;
-	unsigned int w = 1, j = 0;
-  char *class;
+	unsigned int w = 1;
 
-	/* drw_clr_create(drw, &scheme[SchemeNorm][ColBg], termcolor[9]); */
   if (!showsystray)
     return;
 	if (!systray) {
@@ -3213,7 +3256,7 @@ updatesystray(void)
 		systray->win = XCreateSimpleWindow(dpy, root, x, y, w, bh, 0, 0, scheme[SchemeNorm][ColBg].pixel);
 		wa.event_mask        = ButtonPressMask | ExposureMask;
 		wa.override_redirect = True;
-		wa.background_pixel  = scheme[SchemeNorm][ColFg].pixel;
+		wa.background_pixel  = scheme[SchemeNorm][ColBg].pixel;
 		XSelectInput(dpy, systray->win, SubstructureNotifyMask);
 		XChangeProperty(dpy, systray->win, netatom[NetSystemTrayOrientation], XA_CARDINAL, 32,
 				PropModeReplace, (unsigned char *)&netatom[NetSystemTrayOrientationHorz], 1);
@@ -3231,41 +3274,7 @@ updatesystray(void)
 			return;
 		}
 	}
-	for (w = 0, i = systray->icons; i; i = i->next) {
-		/* make sure the background color stays the same */
-    /* hehe no, I don't think I will */
-		wa.background_pixel  = scheme[SchemeSel][ColBg].pixel;
-		XChangeWindowAttributes(dpy, i->win, CWBackPixel, &wa);
-		XMapRaised(dpy, i->win);
-		w += systrayspacing;
-		i->x = w;
-
-    if(textsystray) {
-      XClassHint ch = { NULL, NULL };
-      if (!XGetClassHint(dpy, i->win, &ch) || !ch.res_class)
-        class = strdup("?");
-      else
-        class = ch.res_class;
-
-      if (strlen(class) > 2)
-        class[2] = '\0';
-      if (lcaselbl)
-        class[0] = tolower(class[0]);
-      drw_clr_create(drw, &drw->scheme[ColBg], termcolor[++j % 2 + 2]);
-      drw_clr_create(drw, &drw->scheme[ColFg], termcolor[0]);
-      drw_text(drw, 0, 0, i->w, bh, lrpad/4, class, 0);
-      drw_map(drw, i->win, 0, 0, i->w, bh);
-      if (class)
-        XFree(class);
-      if (ch.res_name)
-        XFree(ch.res_name);
-    }
-
-    XMoveResizeWindow(dpy, i->win, i->x, 0, i->w, i->h);
-		w += i->w;
-		if (i->mon != m)
-			i->mon = m;
-	}
+  w = drawtrayicons();
 	w = w ? w + systrayspacing : 1;
 	x -= w + sp;
 	XMoveResizeWindow(dpy, systray->win, x, y, w, bh);
@@ -3280,8 +3289,9 @@ updatesystray(void)
     XUnmapSubwindows(dpy, systray->win);
   }
 	/* redraw background */
-	XSetForeground(dpy, drw->gc, scheme[SchemeNorm][ColBg].pixel);
-	XFillRectangle(dpy, systray->win, drw->gc, 0, 0, w, bh);
+  /* drw_clr_create(drw, &drw->scheme[ColBg], termcolor[1]); */
+	/* XSetForeground(dpy, drw->gc, scheme[SchemeNorm][ColBg].pixel); */
+	/* XFillRectangle(dpy, systray->win, drw->gc, 0, 0, w, bh); */
 	XSync(dpy, False);
 }
 
@@ -3489,6 +3499,7 @@ wintosystrayicon(Window w) {
 	if (!showsystray || !w)
 		return i;
 	for (i = systray->icons; i && i->win != w; i = i->next) ;
+  drawtrayicons();
 	return i;
 }
 
