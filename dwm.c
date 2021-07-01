@@ -1193,8 +1193,8 @@ drawstatusbar(Monitor *m, int bh, char* stext) {
 	}
 
 	if (!isCode) {
-		/* w = TEXTW(stext) - lrpad; */
-    w = status2dtextlength(stext);
+		w = TEXTW(stext) - lrpad;
+    /* w = status2dtextlength(stext); */
 		drw_text(drw, x, 0, w, bh, 0, text, 0);
 	}
 	drw_setscheme(drw, scheme[SchemeNorm]);
