@@ -22,7 +22,7 @@ static unsigned int gappov    = 24;       /* vert outer gap between windows and 
 static int swallowfloating    = 0;        /* 1 means swallow floating windows by default */
 static int smartgaps          = 0;        /* 1 means no outer gap when there is only one window */
 static int showbar            = 1;        /* 0 means no bar */
-static int topbar             = 1;        /* 0 means bottom bar */
+static int topbar             = 0;        /* 0 means bottom bar */
 static const int user_bh      = 24;        /* height of bar */
 static const int vertpad      = 0;        /* vertical padding of bar */
 static const int sidepad      = 24;       /* horizontal padding of bar */
@@ -83,11 +83,11 @@ typedef struct {
 	const char *name;
 	const void *cmd;
 } Sp;
-const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "120x34", NULL };
+const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "100x40", NULL };
 const char *spcmd2[] = {TERMINAL, "-n", "spcalc", "-f", "Terminus:size=14", "-g", "50x20", "-e", "calc", NULL };
-const char *spcmd3[] = {TERMINAL, "-n", "cmus", "-g", "120x34", "-e", "cmus", NULL };
-const char *spcmd4[] = {TERMINAL, "-n", "top", "-g", "120x34", "-e", "bpytop", NULL };
-const char *spcmd5[] = {TERMINAL, "-n", "ranger", "-g", "120x34", "-e", "ranger", NULL };
+const char *spcmd3[] = {TERMINAL, "-n", "cmus", "-g", "100x40", "-e", "cmus", NULL };
+const char *spcmd4[] = {TERMINAL, "-n", "top", "-g", "100x40", "-e", "bpytop", NULL };
+const char *spcmd5[] = {TERMINAL, "-n", "ranger", "-g", "100x40", "-e", "ranger", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
 	{"spterm",   spcmd1},
@@ -358,6 +358,10 @@ static Key keys[] = {
 	{ 0, XF86XK_MonBrightnessUp,	spawn,		SHCMD("xbacklight -inc 15") },
 	{ 0, XF86XK_MonBrightnessDown,	spawn,		SHCMD("xbacklight -dec 15") },
 
+	{ ControlMask, XK_space,	spawn,		        SHCMD("dunstctl close") },
+	{ ControlMask|ShiftMask, XK_space,	spawn,  SHCMD("dunstctl set-paused toggle") },
+	{ ControlMask, XK_grave,	spawn,		SHCMD("dunstctl history-pop") },
+	{ ControlMask|ShiftMask, XK_grave,	spawn,		SHCMD("dunstctl context") },
 	/* { MODKEY|Mod4Mask,              XK_h,      incrgaps,       {.i = +1 } }, */
 	/* { MODKEY|Mod4Mask,              XK_l,      incrgaps,       {.i = -1 } }, */
 	/* { MODKEY|Mod4Mask|ShiftMask,    XK_h,      incrogaps,      {.i = +1 } }, */
