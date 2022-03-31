@@ -14,6 +14,9 @@ X11LIB = /usr/X11R6/lib
 #XINERAMALIBS  = -lXinerama
 #XINERAMAFLAGS = -DXINERAMA
 
+XFTLIB=/usr/local/lib
+XFTINC=/usr/local/include
+
 # freetype
 FREETYPELIBS = -lfontconfig -lXft
 FREETYPEINC = /usr/include/freetype2
@@ -21,8 +24,8 @@ FREETYPEINC = /usr/include/freetype2
 #FREETYPEINC = ${X11INC}/freetype2
 
 # includes and libs
-INCS = -I${X11INC} -I${FREETYPEINC}
-LIBS = -L${X11LIB} -lX11 ${XINERAMALIBS} ${FREETYPELIBS} -lX11-xcb -lxcb -lxcb-res
+INCS = -I${X11INC} -I${FREETYPEINC} -I${XFTINC}
+LIBS = -L${X11LIB} -L${XFTLIB} -lX11 ${XINERAMALIBS} ${FREETYPELIBS} -lX11-xcb -lxcb -lxcb-res
 
 # flags
 CPPFLAGS = -D_DEFAULT_SOURCE -D_BSD_SOURCE -D_POSIX_C_SOURCE=200809L -DVERSION=\"${VERSION}\" ${XINERAMAFLAGS}

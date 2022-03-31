@@ -26,8 +26,9 @@ static int topbar             = 0;        /* 0 means bottom bar */
 static const int user_bh      = 24;        /* height of bar */
 static const int vertpad      = 0;        /* vertical padding of bar */
 static const int sidepad      = 24;       /* horizontal padding of bar */
-static char *fonts[]          = { "Dina:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=true"};
-static const char dmenufont[] = "Dina:size=10";
+// static char *fonts[]          = { "Dina:size=10", "Siji:antialias=false", "Noto Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=true"};
+static char *fonts[]          = { "JetBrainsMono Nerd Font:size=10:antialias=false", "JetBrains Mono NL:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=true"};
+static const char dmenufont[] = "JetBrainsMono Nerd Font:size=10";
 
 static const char autostartblocksh[] = "autostart_blocking.sh";
 static const char autostartsh[] = "autostart.sh";
