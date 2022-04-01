@@ -3215,13 +3215,24 @@ drawtrayicons(void)
         class = strdup("?");
       else
         class = ch.res_class;
-
-      if (strlen(class) > 2)
-        class[2] = '\0';
-      if (lcaselbl)
-        class[0] = tolower(class[0]);
+      int is_icon = 0;
+      for (int k = 0; k < LENGTH(icons); k++) {
+        if (strstr(class, icons[k].class_name)) {
+          if (class)
+            XFree(class);
+          class = strdup(icons[k].icon);
+          is_icon = 1;
+          break;
+        }
+      }
+      if (!is_icon) {
+        if (strlen(class) > 2)
+          class[2] = '\0';
+        if (lcaselbl)
+          class[0] = tolower(class[0]);
+      }
       drw_clr_create(drw, &drw->scheme[ColBg], termcolor[(j++ % 2) * 5 + 1]);
-      drw_text(drw, 0, 0, i->w, bh, lrpad/4, class, 0);
+      drw_text(drw, 0, 0, i->w, bh, lrpad/4 + lrpad/8 * is_icon, class, 0);
       drw_map(drw, i->win, 0, 0, i->w, bh);
       if (class)
         XFree(class);

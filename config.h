@@ -14,6 +14,16 @@ static const unsigned int systrayspacing = 0;   /* systray spacing */
 static const int systraypinningfailfirst = 1;   /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
 static const int showsystray  = 1;        /* 0 means no systray */
 static const int textsystray  = 1;        /* 1 means use text instead of icons for system trays */
+typedef struct {
+	const char *class_name;
+	const char *icon;
+} trayIcon;
+static const trayIcon icons[] = {
+  {"discord", "ﭮ"},
+  {"steam", ""},
+  {"nm-tray", "ﯱ"},
+  {"?", ""}
+};
 static const int alttags      = 1;        /* 1 means labeled tags by default  */
 static unsigned int gappih    = 16;       /* horiz inner gap between windows */
 static unsigned int gappiv    = 16;       /* vert inner gap between windows */
@@ -27,7 +37,7 @@ static const int user_bh      = 24;        /* height of bar */
 static const int vertpad      = 0;        /* vertical padding of bar */
 static const int sidepad      = 24;       /* horizontal padding of bar */
 // static char *fonts[]          = { "Dina:size=10", "Siji:antialias=false", "Noto Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=true"};
-static char *fonts[]          = { "JetBrainsMono Nerd Font:size=10:antialias=false", "JetBrains Mono NL:size=10", "Siji:antialias=false", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=true"};
+static char *fonts[]          = { "JetBrainsMono Nerd Font:size=10:antialias=true", "JetBrains Mono NL:size=10", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=12:antialias=true"};
 static const char dmenufont[] = "JetBrainsMono Nerd Font:size=10";
 
 static const char autostartblocksh[] = "autostart_blocking.sh";
