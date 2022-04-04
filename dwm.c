@@ -3232,7 +3232,7 @@ drawtrayicons(void)
           class[0] = tolower(class[0]);
       }
       drw_clr_create(drw, &drw->scheme[ColBg], termcolor[(j++ % 2) * 5 + 1]);
-      drw_text(drw, 0, 0, i->w, bh, lrpad/4 + lrpad/8 * is_icon, class, 0);
+      drw_text(drw, 0, 0, i->w, bh, lrpad/4 + is_icon * lrpad/8, class, 0);
       drw_map(drw, i->win, 0, 0, i->w, bh);
       if (class)
         XFree(class);
