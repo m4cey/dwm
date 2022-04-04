@@ -120,8 +120,8 @@ static const Rule rules[] = {
 	 *	WM_CLASS(STRING) = instance, class
 	 *	WM_NAME(STRING) = title
 	*/
-	/* class    instance      title       	 tags mask    isfloating   isterminal  noswallow  monitor */
 	/* class    instance      title          tags mask    isfloating   isfreesize  isterminal noslwallow monitor */
+	{ "Xterm",    NULL,       NULL,       	    SPTAG(5),     0,         1,            0,         0,        -1 },
 	{ "Gimp",     NULL,       NULL,       	    1 << 8,       0,         1,            0,         0,        -1 },
 	{ "Spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
 	{ "spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
