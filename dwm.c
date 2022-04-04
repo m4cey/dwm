@@ -819,6 +819,7 @@ void cleanup(void) {
     drw_cur_free(drw, cursor[i]);
   for (i = 0; i < LENGTH(colors) + 1; i++)
     free(scheme[i]);
+  free(scheme[i]);
   XDestroyWindow(dpy, wmcheckwin);
   drw_free(drw);
   XSync(dpy, False);
@@ -1287,6 +1288,8 @@ void drawbar(Monitor *m) {
   int boxw = drw->fonts->h / 6 + 2;
   unsigned int i, occ = 0, urg = 0, n = 0, k = 0;
   Client *c;
+  if (!m->showbar)
+    return;
   char tagdisp[64];
   char *masterclientontag[LENGTH(tags)];
 
@@ -1849,7 +1852,7 @@ void manage(Window w, XWindowAttributes *wa) {
                    StructureNotifyMask);
   grabbuttons(c, 0);
   if (!c->isfloating)
-    c->isfloating = c->oldstate = trans != None || c->isfixed;
+    c->isfloating = c->oldstate = t || c->isfixed;
   if (c->isfloating)
     XRaiseWindow(dpy, c->win);
   switch (attachdirection) {
