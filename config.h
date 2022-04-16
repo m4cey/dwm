@@ -95,17 +95,13 @@ typedef struct {
 	const void *cmd;
 } Sp;
 const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "100x40", NULL };
-const char *spcmd2[] = {TERMINAL, "-n", "spcalc", "-f", "Terminus:size=14", "-g", "50x20", "-e", "calc", NULL };
-const char *spcmd3[] = {TERMINAL, "-n", "cmus", "-g", "100x40", "-e", "cmus", NULL };
-const char *spcmd4[] = {TERMINAL, "-n", "top", "-g", "100x40", "-e", "bpytop", NULL };
-const char *spcmd5[] = {TERMINAL, "-n", "ranger", "-g", "100x40", "-e", "ranger", NULL };
+const char *spcmd2[] = {TERMINAL, "-n", "top", "-g", "100x40", "-e", "bpytop", NULL };
+const char *spcmd3[] = {TERMINAL, "-n", "ranger", "-g", "100x40", "-e", "ranger", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
 	{"spterm",   spcmd1},
-	{"spcalc",   spcmd2},
-	{"cmus",     spcmd3},
-	{"top",     spcmd4},
-	{"spranger", spcmd5},
+	{"top",     spcmd2},
+	{"spranger", spcmd3},
 };
 
 /* tagging */
@@ -129,15 +125,14 @@ static const Rule rules[] = {
   { "hl2_linux",NULL,       NULL,           	1 << 3,       0,         0,            0,         0,        -1 },
   { "Brave-browser",
                 NULL,       NULL,           	1 << 2,       0,         0,            0,         0,        -1 },
+  { "Waterfox", NULL,       NULL,           	1 << 2,       0,         0,            0,         0,        -1 },
 	{ "discord",  NULL,       NULL,       	    1 << 1,       0,         0,            0,         0,        -1 },
 	{ "Slack",    NULL,       NULL,       	    1 << 1,       0,         0,            0,         0,        -1 },
 	{ TERMCLASS,  NULL,       NULL,       	    0,            0,         0,            1,         0,        -1 },
 	{ NULL,       NULL,       "Event Tester",   0,            0,         0,            0,         1,        -1 },
 	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,         0,            1,         0,        -1 },
-	{ NULL,      "spcalc",    NULL,       	    SPTAG(1),     1,         0,            1,         0,        -1 },
-	{ NULL,      "cmus",      NULL,       	    SPTAG(2),     1,         0,            1,         0,        -1 },
-	{ NULL,      "top",       NULL,       	    SPTAG(3),     1,         0,            1,         0,        -1 },
-	{ NULL,      "ranger",    NULL,       	    SPTAG(4),     1,         0,            1,         0,        -1 },
+	{ NULL,      "top",       NULL,       	    SPTAG(1),     1,         0,            1,         0,        -1 },
+	{ NULL,      "ranger",    NULL,       	    SPTAG(2),     1,         0,            1,         0,        -1 },
 };
 
 /* layout(s) */
@@ -284,11 +279,9 @@ static Key keys[] = {
 	/* J and K are automatically bound above in STACKEYS */
 	{ MODKEY,			XK_l,		setmfact,      	{.f = +0.05} },
 	{ MODKEY,			XK_semicolon,	shiftview,	{ .i = 1 } },
-	{ MODKEY,		  XK_m,	  togglescratch,	{.ui = 2} },
-	{ MODKEY,		  XK_r,	  togglescratch,	{.ui = 4} },
+	{ MODKEY,		  XK_r,	  togglescratch,	{.ui = 2} },
 	{ MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .i = 1 } },
-	{ MODKEY,			XK_apostrophe,	togglescratch,	{.ui = 1} },
-	{ MODKEY|ShiftMask,		XK_apostrophe,	togglescratch,	{.ui = 3} },
+	{ MODKEY,		XK_apostrophe,	togglescratch,	{.ui = 1} },
 	{ MODKEY,			XK_Return,	spawn,		{.v = termcmd } },
 	{ MODKEY|ShiftMask,		XK_Return,	togglescratch,	{.ui = 0} },
 
@@ -297,8 +290,7 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,			XK_z,		incrogaps,	{.i = +3 } },
 	{ MODKEY|ShiftMask,			XK_x,		incrogaps,	{.i = -3 } },
 	/* { MODKEY|ShiftMask,		XK_x,		spawn,		SHCMD("") }, */
-	{ MODKEY,			XK_c,		spawn,		SHCMD("xcmenuctrl") },
-	{ MODKEY|ShiftMask,		XK_c,		spawn,		SHCMD("netm_dmenu") },
+	{ MODKEY,		XK_c,		spawn,		SHCMD("netm_dmenu") },
 	/* V is automatically bound above in STACKKEYS */
 	{ MODKEY,			XK_b,		togglebar,	{0} },
 	/* { MODKEY|ShiftMask,		XK_b,		spawn,		SHCMD("") }, */
