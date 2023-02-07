@@ -501,7 +501,7 @@ void applyrules(Client *c) {
       c->isfreesize = r->isfreesize;
       c->noswallow = r->noswallow;
       c->tags |= r->tags;
-      if ((r->tags & SPTAGMASK) && r->isfloating) {
+      if ((r->tags & SPTAGMASK) && r->isfloating && r->isfreesize) {
         c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
         c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
       }
@@ -2366,9 +2366,9 @@ void setfocus(Client *c) {
 
 void setfullscreen(Client *c, int fullscreen) {
   if (fullscreen && !c->isfullscreen) {
-    XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
-                    PropModeReplace, (unsigned char *)&netatom[NetWMFullscreen],
-                    1);
+    /* XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32, */
+    /*                 PropModeReplace, (unsigned char *)&netatom[NetWMFullscreen], */
+    /*                 1); */
     c->isfullscreen = 1;
     c->oldstate = c->isfloating;
     c->oldbw = c->bw;
@@ -2579,7 +2579,7 @@ void showhide(Client *c) {
   if (!c)
     return;
   if (ISVISIBLE(c)) {
-    if ((c->tags & SPTAGMASK) && c->isfloating) {
+    if ((c->tags & SPTAGMASK) && c->isfloating && c->isfreesize) {
       c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
       c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
     }

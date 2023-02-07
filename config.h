@@ -97,11 +97,17 @@ typedef struct {
 const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "100x40", NULL };
 const char *spcmd2[] = {TERMINAL, "-n", "top", "-g", "100x40", "-e", "bpytop", NULL };
 const char *spcmd3[] = {TERMINAL, "-n", "ranger", "-g", "100x40", "-e", "ranger", NULL };
+const char *spcmd4[] = {TERMINAL, "-n", "musikcube", "-g", "100x40", "-e", "musikcube", NULL };
+const char *spcmd5[] = {"albumart.sh", NULL};
+const char *spcmd6[] = {TERMINAL, "-n", "cavaviz", "-g", "40x18+59+472", "-e", "cava", NULL };
 static Sp scratchpads[] = {
 	/* name          cmd  */
 	{"spterm",   spcmd1},
 	{"top",     spcmd2},
 	{"spranger", spcmd3},
+	{"musikcube", spcmd4},
+	{"albumart", spcmd5},
+	{"cavaviz", spcmd6},
 };
 
 /* tagging */
@@ -117,8 +123,8 @@ static const Rule rules[] = {
 	 *	WM_NAME(STRING) = title
 	*/
 	/* class    instance      title          tags mask    isfloating   isfreesize  isterminal noslwallow monitor */
-	{ "Xterm",    NULL,       NULL,       	    SPTAG(5),     0,         1,            0,         0,        -1 },
-	{ "Gimp",     NULL,       NULL,       	    1 << 8,       0,         1,            0,         0,        -1 },
+	{ "dwmlog",   NULL,       NULL,       	    1 << 8,       0,         1,            0,         0,        -1 },
+	{ "Gimp",     NULL,       NULL,       	    1 << 6,       0,         1,            0,         0,        -1 },
 	{ "Spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
 	{ "spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
   { "Steam",    NULL,       NULL,           	1 << 3,       0,         0,            0,         0,        -1 },
@@ -130,9 +136,12 @@ static const Rule rules[] = {
 	{ "Slack",    NULL,       NULL,       	    1 << 1,       0,         0,            0,         0,        -1 },
 	{ TERMCLASS,  NULL,       NULL,       	    0,            0,         0,            1,         0,        -1 },
 	{ NULL,       NULL,       "Event Tester",   0,            0,         0,            0,         1,        -1 },
-	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,         0,            1,         0,        -1 },
-	{ NULL,      "top",       NULL,       	    SPTAG(1),     1,         0,            1,         0,        -1 },
-	{ NULL,      "ranger",    NULL,       	    SPTAG(2),     1,         0,            1,         0,        -1 },
+	{ NULL,      "spterm",    NULL,       	    SPTAG(0),     1,         1,            1,         0,        -1 },
+	{ NULL,      "top",       NULL,       	    SPTAG(1),     1,         1,            1,         0,        -1 },
+	{ NULL,      "ranger",    NULL,       	    SPTAG(2),     1,         1,            1,         0,        -1 },
+	{ NULL,      "musikcube", NULL,       	    SPTAG(3),     1,         1,            1,         0,        -1 },
+	{ NULL,      "albumart",  NULL,             SPTAG(4),     1,         0,            0,         0,        -1 },
+	{ NULL,      "cavaviz",   NULL,             SPTAG(5),     1,         0,            0,         0,        -1 },
 };
 
 /* layout(s) */
@@ -278,9 +287,12 @@ static Key keys[] = {
 	{ MODKEY,			XK_h,		setmfact,	{.f = -0.05} },
 	/* J and K are automatically bound above in STACKEYS */
 	{ MODKEY,			XK_l,		setmfact,      	{.f = +0.05} },
-	{ MODKEY,			XK_semicolon,	shiftview,	{ .i = 1 } },
+	{ MODKEY,			XK_m,		togglescratch,      	{.ui = 5} },
+	{ MODKEY,			XK_m,		togglescratch,      	{.ui = 4} },
+	{ MODKEY,			XK_m,		togglescratch,      	{.ui = 3} },
+	{ MODKEY,			XK_semicolon,	shiftview,	{ .ui = 1 } },
 	{ MODKEY,		  XK_r,	  togglescratch,	{.ui = 2} },
-	{ MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .i = 1 } },
+	{ MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .ui = 1 } },
 	{ MODKEY,		XK_apostrophe,	togglescratch,	{.ui = 1} },
 	{ MODKEY,			XK_Return,	spawn,		{.v = termcmd } },
 	{ MODKEY|ShiftMask,		XK_Return,	togglescratch,	{.ui = 0} },
@@ -341,7 +353,7 @@ static Key keys[] = {
 	{ 0, XF86XK_AudioStop,		spawn,		SHCMD("playerctl stop; kill -44 $(pidof dwmblocks)") },
 	{ 0, XF86XK_AudioRewind,	spawn,		SHCMD("playerctl position 10-") },
 	{ 0, XF86XK_AudioForward,	spawn,		SHCMD("playerctl position 10+") },
-	{ 0, XF86XK_AudioMedia,		spawn,		SHCMD(TERMINAL " -e cmus") },
+	{ 0, XF86XK_AudioMedia,		spawn,		SHCMD(TERMINAL " -e musikcube") },
 	{ 0, XF86XK_AudioMicMute,	spawn,		SHCMD("pactl set-source-mute @DEFAULT_SOURCE@ toggle") },
 	{ 0, XF86XK_PowerOff,		spawn,		SHCMD("sysact") },
 	{ 0, XF86XK_Calculator,		spawn,		SHCMD(TERMINAL " -e bc -l") },
