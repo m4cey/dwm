@@ -36,8 +36,7 @@ static int topbar             = 0;        /* 0 means bottom bar */
 static const int user_bh      = 24;        /* height of bar */
 static const int vertpad      = 0;        /* vertical padding of bar */
 static const int sidepad      = 24;       /* horizontal padding of bar */
-// static char *fonts[]          = { "Dina:size=10", "Siji:antialias=false", "Noto Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=9:antialias=true"};
-static char *fonts[]          = { "JetBrainsMono Nerd Font:size=10:antialias=true", "JetBrains Mono NL:size=10", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=12:antialias=true"};
+static char *fonts[]          = { "JetBrainsMono Nerd Font:size=10:antialias=true", "Noto Color Emoji:pixelsize=10:antialias=true:autohint=true", "FontAwesome:size=12:antialias=true", "Noto Sans Mono CJK JP:size=10:antialias=false"};
 static const char dmenufont[] = "JetBrainsMono Nerd Font:size=10";
 
 static const char autostartblocksh[] = "autostart_blocking.sh";
@@ -95,7 +94,7 @@ typedef struct {
 	const void *cmd;
 } Sp;
 const char *spcmd1[] = {TERMINAL, "-n", "spterm", "-g", "100x40", NULL };
-const char *spcmd2[] = {TERMINAL, "-n", "top", "-g", "100x40", "-e", "bpytop", NULL };
+const char *spcmd2[] = {TERMINAL, "-n", "top", "-g", "100x40", "-e", "btop", NULL };
 const char *spcmd3[] = {TERMINAL, "-n", "ranger", "-g", "100x40", "-e", "ranger", NULL };
 const char *spcmd4[] = {TERMINAL, "-n", "musikcube", "-g", "100x40", "-e", "musikcube", NULL };
 const char *spcmd5[] = {"albumart.sh", NULL};
@@ -125,13 +124,14 @@ static const Rule rules[] = {
 	/* class    instance      title          tags mask    isfloating   isfreesize  isterminal noslwallow monitor */
 	{ "dwmlog",   NULL,       NULL,       	    1 << 8,       0,         1,            0,         0,        -1 },
 	{ "Gimp",     NULL,       NULL,       	    1 << 6,       0,         1,            0,         0,        -1 },
+	{ "krita",     NULL,       NULL,       	    1 << 6,       0,         1,            0,         0,        -1 },
 	{ "Spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
 	{ "spotify",  NULL,       NULL,       	    1 << 7,       0,         0,            0,         0,        -1 },
   { "Steam",    NULL,       NULL,           	1 << 3,       0,         0,            0,         0,        -1 },
   { "hl2_linux",NULL,       NULL,           	1 << 3,       0,         0,            0,         0,        -1 },
   { "Brave-browser",
                 NULL,       NULL,           	1 << 2,       0,         0,            0,         0,        -1 },
-  { "Waterfox", NULL,       NULL,           	1 << 2,       0,         0,            0,         0,        -1 },
+  { "firefox", NULL,       NULL,           	1 << 2,       0,         0,            0,         0,        -1 },
 	{ "discord",  NULL,       NULL,       	    1 << 1,       0,         0,            0,         0,        -1 },
 	{ "Slack",    NULL,       NULL,       	    1 << 1,       0,         0,            0,         0,        -1 },
 	{ TERMCLASS,  NULL,       NULL,       	    0,            0,         0,            1,         0,        -1 },
@@ -275,32 +275,33 @@ static Key keys[] = {
 	/* { MODKEY|ShiftMask,		XK_backslash,		spawn,		SHCMD("") }, */
 
 	{ MODKEY,			XK_a,		togglegaps,	{0} },
-	{ MODKEY|ShiftMask,		XK_a,		defaultgaps,	{0} },
+	// { MODKEY|ShiftMask,		XK_a,		defaultgaps,	{0} },
 	{ MODKEY,			XK_s,		togglesticky,	{0} },
 	/* { MODKEY|ShiftMask,		XK_s,		spawn,		SHCMD("") }, */
 	{ MODKEY,			XK_d,		spawn,          SHCMD("dmenu_run -l 10 -g 5") },
 	{ MODKEY|ShiftMask,			XK_d,		spawn,SHCMD("j4-dmenu-desktop --dmenu=\"dmenu -l 10 -g 5\"") },
 	{ MODKEY,			XK_f,		togglefullscr,	{0} },
 	{ MODKEY|ShiftMask,		XK_f,		setlayout,	{.v = &layouts[9]} },
-	{ MODKEY,			XK_g,		shiftview,	{ .i = -1 } },
-	{ MODKEY|ShiftMask,		XK_g,		shifttag,	{ .i = -1 } },
-	{ MODKEY,			XK_h,		setmfact,	{.f = -0.05} },
+	{ MODKEY,			XK_h,		shiftview,	{ .i = -1 } },
+	{ MODKEY|ShiftMask,		XK_h,		shifttag,	{ .i = -1 } },
+	{ MODKEY,			XK_g,		setmfact,	{.f = -0.05} },
 	/* J and K are automatically bound above in STACKEYS */
-	{ MODKEY,			XK_l,		setmfact,      	{.f = +0.05} },
+	{ MODKEY,			XK_semicolon,		setmfact,      	{.f = +0.05} },
 	{ MODKEY,			XK_m,		togglescratch,      	{.ui = 5} },
 	{ MODKEY,			XK_m,		togglescratch,      	{.ui = 4} },
 	{ MODKEY,			XK_m,		togglescratch,      	{.ui = 3} },
-	{ MODKEY,			XK_semicolon,	shiftview,	{ .ui = 1 } },
+	{ MODKEY|ShiftMask,			XK_m,		togglescratch,      	{.ui = 3} },
+	{ MODKEY,			XK_l,	shiftview,	{ .ui = 1 } },
 	{ MODKEY,		  XK_r,	  togglescratch,	{.ui = 2} },
-	{ MODKEY|ShiftMask,		XK_semicolon,	shifttag,	{ .ui = 1 } },
+	{ MODKEY|ShiftMask,		XK_l,	shifttag,	{ .ui = 1 } },
 	{ MODKEY,		XK_apostrophe,	togglescratch,	{.ui = 1} },
 	{ MODKEY,			XK_Return,	spawn,		{.v = termcmd } },
 	{ MODKEY|ShiftMask,		XK_Return,	togglescratch,	{.ui = 0} },
 
-	{ MODKEY,			XK_z,		incrgaps,	{.i = +3 } },
-	{ MODKEY,			XK_x,		incrgaps,	{.i = -3 } },
-	{ MODKEY|ShiftMask,			XK_z,		incrogaps,	{.i = +3 } },
-	{ MODKEY|ShiftMask,			XK_x,		incrogaps,	{.i = -3 } },
+	// { MODKEY,			XK_z,		incrgaps,	{.i = +3 } },
+	// { MODKEY,			XK_x,		incrgaps,	{.i = -3 } },
+	// { MODKEY|ShiftMask,			XK_z,		incrogaps,	{.i = +3 } },
+	// { MODKEY|ShiftMask,			XK_x,		incrogaps,	{.i = -3 } },
 	/* { MODKEY|ShiftMask,		XK_x,		spawn,		SHCMD("") }, */
 	{ MODKEY,		XK_c,		spawn,		SHCMD("netm_dmenu") },
 	/* V is automatically bound above in STACKKEYS */
@@ -317,10 +318,10 @@ static Key keys[] = {
 	{ MODKEY,			XK_Right,	focusmon,	{.i = +1 } },
 	{ MODKEY|ShiftMask,		XK_Right,	tagmon,		{.i = +1 } },
 
-	{ MODKEY,			XK_Page_Up,	shiftview,	{ .i = -1 } },
-	{ MODKEY|ShiftMask,		XK_Page_Up,	shifttag,	{ .i = -1 } },
-	{ MODKEY,			XK_Page_Down,	shiftview,	{ .i = +1 } },
-	{ MODKEY|ShiftMask,		XK_Page_Down,	shifttag,	{ .i = +1 } },
+	// { MODKEY,			XK_Page_Up,	shiftview,	{ .i = -1 } },
+	// { MODKEY|ShiftMask,		XK_Page_Up,	shifttag,	{ .i = -1 } },
+	// { MODKEY,			XK_Page_Down,	shiftview,	{ .i = +1 } },
+	// { MODKEY|ShiftMask,		XK_Page_Down,	shifttag,	{ .i = +1 } },
 	{ MODKEY,			XK_Insert,	spawn,		SHCMD("xdotool type $(cat ~/.local/share/larbs/snippets | dmenu -i -l 50 | cut -d' ' -f1)") },
 
 	{ MODKEY,			XK_F3,		spawn,		SHCMD("displayselect") },
@@ -368,8 +369,10 @@ static Key keys[] = {
 	{ 0, XF86XK_TouchpadToggle,	spawn,		SHCMD("(synclient | grep 'TouchpadOff.*1' && synclient TouchpadOff=0) || synclient TouchpadOff=1") },
 	{ 0, XF86XK_TouchpadOff,	spawn,		SHCMD("synclient TouchpadOff=1") },
 	{ 0, XF86XK_TouchpadOn,		spawn,		SHCMD("synclient TouchpadOff=0") },
-	{ 0, XF86XK_MonBrightnessUp,	spawn,		SHCMD("xbacklight -inc 15") },
-	{ 0, XF86XK_MonBrightnessDown,	spawn,		SHCMD("xbacklight -dec 15") },
+	{ 0, XF86XK_MonBrightnessUp,	spawn,		SHCMD("xbacklight -inc 4") },
+	{ 0, XF86XK_MonBrightnessDown,	spawn,		SHCMD("xbacklight -dec 4") },
+	{ MODKEY, XK_Page_Up,	spawn,		SHCMD("xbacklight -inc 4") },
+	{ MODKEY, XK_Page_Down,	spawn,		SHCMD("xbacklight -dec 4") },
 
 	{ ControlMask, XK_space,	spawn,		        SHCMD("dunstctl close") },
 	{ ControlMask|ShiftMask, XK_space,	spawn,  SHCMD("dunstctl set-paused toggle") },

@@ -459,7 +459,7 @@ struct NumTags {
 };
 
 /* function implementations */
-static void apply_fribidi(char *str) {
+static void apply_fribidi(const char *str) {
   FriBidiStrIndex len = strlen(str);
   FriBidiChar logical[BUFSIZ];
   FriBidiChar visual[BUFSIZ];
@@ -1340,7 +1340,7 @@ void drawbar(Monitor *m) {
       apply_fribidi(masterclientontag[i]);
       tagw[i] = w = TEXTW(fribidi_text);
     }
-    clr = (k % 2) ? 1 : 6;
+    clr = (k % 2) ? 8 : 1;
     k++;
     drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[clr]);
     drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[clr]);
@@ -1354,13 +1354,15 @@ void drawbar(Monitor *m) {
     }
     x += w;
   }
-  drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[2]);
-  drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[2]);
+  drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[1]);
+  drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[1]);
   apply_fribidi(m->ltsymbol);
   w = blw = TEXTW(fribidi_text);
   drw_setscheme(drw, scheme[SchemeNorm]);
   x = drw_text(drw, x, 0, w, bh, lrpad / 2, fribidi_text, 0);
 
+  drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[8]);
+  drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[8]);
   if ((w = m->ww - tw - stw - x - lrpad) > bh) {
     if (n > 0) {
       apply_fribidi(m->sel->name);
@@ -1386,7 +1388,7 @@ void drawbar(Monitor *m) {
           continue;
         if (mw == 0)
           apply_fribidi(stext);
-          w = m->ww - status2dtextlength(fribidi_text) - stw - x - lrpad - sp;
+        w = m->ww - status2dtextlength(fribidi_text) - stw - x - lrpad - sp;
         apply_fribidi(c->name);
         tw = MIN(m->sel == c ? w : mw, TEXTW(fribidi_text));
 
@@ -3147,7 +3149,7 @@ int drawtrayicons(void) {
         if (lcaselbl)
           class[0] = tolower(class[0]);
       }
-      drw_clr_create(drw, &drw->scheme[ColBg], termcolor[(j++ % 2) * 5 + 1]);
+      drw_clr_create(drw, &drw->scheme[ColBg], termcolor[(j++ % 2) ? 8 : 1]);
       drw_text(drw, 0, 0, i->w, bh, lrpad / 4 + is_icon * lrpad / 8, class, 0);
       drw_map(drw, i->win, 0, 0, i->w, bh);
       if (class)
