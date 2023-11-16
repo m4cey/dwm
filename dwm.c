@@ -75,6 +75,7 @@
 #define SPTAG(i) ((1 << LENGTH(tags)) << (i))
 #define SPTAGMASK (((1 << LENGTH(scratchpads)) - 1) << LENGTH(tags))
 #define TEXTW(X) (drw_fontset_getwidth(drw, (X)) + lrpad)
+#define OPAQUE 0xffU
 #define TRUNC(X, A, B) (MAX((A), MIN((X), (B))))
 #define XRDB_LOAD_COLOR(R, V)                                                  \
   if (XrmGetResource(xrdb, R, NULL, &type, &value) == True) {                  \
@@ -378,6 +379,7 @@ static Client *wintosystrayicon(Window w);
 static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
+static void xinitvisual();
 static void xrdb(const Arg *arg);
 static void zoom(const Arg *arg);
 static void load_xresources(void);
@@ -436,6 +438,10 @@ static Drw *drw;
 static Monitor *mons, *selmon;
 static Window root, wmcheckwin;
 
+static int useargb = 0;
+static Visual *visual;
+static int depth;
+static Colormap cmap;
 static xcb_connection_t *xcon;
 
 /* configuration, allows nested code to access above variables */
@@ -1172,20 +1178,20 @@ int drawstatusbar(Monitor *m, int bh, char *stext) {
           char buf[8];
           memcpy(buf, (char *)text + i + 1, 7);
           buf[7] = '\0';
-          drw_clr_create(drw, &drw->scheme[ColFg], buf);
+          drw_clr_create(drw, &drw->scheme[ColFg], buf, OPAQUE);
           i += 7;
         } else if (text[i] == 'b') {
           char buf[8];
           memcpy(buf, (char *)text + i + 1, 7);
           buf[7] = '\0';
-          drw_clr_create(drw, &drw->scheme[ColBg], buf);
+          drw_clr_create(drw, &drw->scheme[ColBg], buf, alpha);
           i += 7;
         } else if (text[i] == 'C') {
           int c = atoi(text + ++i);
-          drw_clr_create(drw, &drw->scheme[ColFg], termcolor[c]);
+          drw_clr_create(drw, &drw->scheme[ColFg], termcolor[c], OPAQUE);
         } else if (text[i] == 'B') {
           int c = atoi(text + ++i);
-          drw_clr_create(drw, &drw->scheme[ColBg], termcolor[c]);
+          drw_clr_create(drw, &drw->scheme[ColBg], termcolor[c], alpha);
         } else if (text[i] == 'd') {
           drw->scheme[ColFg] = scheme[SchemeNorm][ColFg];
           drw->scheme[ColBg] = scheme[SchemeNorm][ColBg];
@@ -1283,7 +1289,7 @@ int status2dtextlength(char *stext) {
 }
 
 void drawbar(Monitor *m) {
-  int x, w, tw = 0, mw, ew = 0, stw = 0, clr;
+  int x, w, tw = 0, mw, ew = 0, stw = 0;
   int boxs = drw->fonts->h / 9;
   int boxw = drw->fonts->h / 6 + 2;
   unsigned int i, occ = 0, urg = 0, n = 0, k = 0;
@@ -1292,11 +1298,12 @@ void drawbar(Monitor *m) {
     return;
   char tagdisp[64];
   char *masterclientontag[LENGTH(tags)];
+  char *clr;
 
   if (showsystray && m == systraytomon(m))
     stw = getsystraywidth();
 
-  drw_clr_create(drw, &scheme[SchemeNorm][ColBg], termcolor[0]);
+  drw_clr_create(drw, &scheme[SchemeNorm][ColBg], normbgcolor, alpha);
   /* draw status first so it can be overdrawn by tags later */
   if (m == selmon) { /* status is only drawn on selected monitor */
     drawstatusbar(m, bh, stext);
@@ -1340,10 +1347,10 @@ void drawbar(Monitor *m) {
       apply_fribidi(masterclientontag[i]);
       tagw[i] = w = TEXTW(fribidi_text);
     }
-    clr = (k % 2) ? 8 : 1;
+    clr = (k % 2) ? normfgcolor : selbgcolor;
     k++;
-    drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[clr]);
-    drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[clr]);
+    drw_clr_create(drw, &scheme[SchemeSel][ColBg], clr, alpha);
+    drw_clr_create(drw, &scheme[SchemeNorm][ColFg], clr, OPAQUE);
     drw_setscheme(
         drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
     if (selmon->alttag)
@@ -1354,15 +1361,15 @@ void drawbar(Monitor *m) {
     }
     x += w;
   }
-  drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[1]);
-  drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[1]);
+  drw_clr_create(drw, &scheme[SchemeSel][ColBg], selbgcolor, alpha);
+  drw_clr_create(drw, &scheme[SchemeNorm][ColFg], selbgcolor, OPAQUE);
   apply_fribidi(m->ltsymbol);
   w = blw = TEXTW(fribidi_text);
   drw_setscheme(drw, scheme[SchemeNorm]);
   x = drw_text(drw, x, 0, w, bh, lrpad / 2, fribidi_text, 0);
 
-  drw_clr_create(drw, &scheme[SchemeSel][ColBg], termcolor[8]);
-  drw_clr_create(drw, &scheme[SchemeNorm][ColFg], termcolor[8]);
+  drw_clr_create(drw, &scheme[SchemeSel][ColBg], normbgcolor, alpha);
+  drw_clr_create(drw, &scheme[SchemeNorm][ColFg], normfgcolor, OPAQUE);
   if ((w = m->ww - tw - stw - x - lrpad) > bh) {
     if (n > 0) {
       apply_fribidi(m->sel->name);
@@ -2369,7 +2376,8 @@ void setfocus(Client *c) {
 void setfullscreen(Client *c, int fullscreen) {
   if (fullscreen && !c->isfullscreen) {
     /* XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32, */
-    /*                 PropModeReplace, (unsigned char *)&netatom[NetWMFullscreen], */
+    /*                 PropModeReplace, (unsigned char
+     * *)&netatom[NetWMFullscreen], */
     /*                 1); */
     c->isfullscreen = 1;
     c->oldstate = c->isfloating;
@@ -2492,7 +2500,8 @@ void setup(void) {
   sw = DisplayWidth(dpy, screen);
   sh = DisplayHeight(dpy, screen);
   root = RootWindow(dpy, screen);
-  drw = drw_create(dpy, screen, root, sw, sh);
+  xinitvisual();
+  drw = drw_create(dpy, screen, root, sw, sh, visual, depth, cmap);
   if (!drw_fontset_create(drw, fonts, LENGTH(fonts)))
     die("no fonts could be loaded.");
   lrpad = drw->fonts->h;
@@ -2534,9 +2543,9 @@ void setup(void) {
   cursor[CurMove] = drw_cur_create(drw, XC_fleur);
   /* init appearance */
   scheme = ecalloc(LENGTH(colors) + 1, sizeof(Clr *));
-  scheme[LENGTH(colors)] = drw_scm_create(drw, colors[0], 3);
+  scheme[LENGTH(colors)] = drw_scm_create(drw, colors[0], alphas[0], 3);
   for (i = 0; i < LENGTH(colors); i++)
-    scheme[i] = drw_scm_create(drw, colors[i], 3);
+    scheme[i] = drw_scm_create(drw, colors[i], alphas[i], 3);
   /* init system tray */
   updatesystray();
   /* init bars */
@@ -2861,7 +2870,9 @@ void updatebars(void) {
   unsigned int w;
   Monitor *m;
   XSetWindowAttributes wa = {.override_redirect = True,
-                             .background_pixmap = ParentRelative,
+                             .background_pixel = 0,
+                             .border_pixel = 0,
+                             .colormap = cmap,
                              .event_mask = ButtonPressMask | ExposureMask};
   XClassHint ch = {"dwm", "dwm"};
   for (m = mons; m; m = m->next) {
@@ -2870,10 +2881,11 @@ void updatebars(void) {
     w = m->ww;
     if (showsystray && m == systraytomon(m))
       w -= getsystraywidth();
-    m->barwin = XCreateWindow(
-        dpy, root, m->wx + sp, m->by + vp, w - 2 * sp, bh, 0,
-        DefaultDepth(dpy, screen), CopyFromParent, DefaultVisual(dpy, screen),
-        CWOverrideRedirect | CWBackPixmap | CWEventMask, &wa);
+    m->barwin = XCreateWindow(dpy, root, m->wx, m->by, m->ww, bh, 0, depth,
+                              InputOutput, visual,
+                              CWOverrideRedirect | CWBackPixel | CWBorderPixel |
+                                  CWColormap | CWEventMask,
+                              &wa);
     XDefineCursor(dpy, m->barwin, cursor[CurNormal]->cursor);
     if (showsystray && m == systraytomon(m))
       XMapRaised(dpy, systray->win);
@@ -3121,7 +3133,7 @@ int drawtrayicons(void) {
   unsigned int w = 1, j = 0;
   char *class;
 
-  drw_clr_create(drw, &drw->scheme[ColFg], termcolor[0]);
+  drw_clr_create(drw, &drw->scheme[ColFg], normbgcolor, OPAQUE);
   for (w = 0, i = systray->icons; i; i = i->next) {
     XMapRaised(dpy, i->win);
     w += systrayspacing;
@@ -3149,7 +3161,8 @@ int drawtrayicons(void) {
         if (lcaselbl)
           class[0] = tolower(class[0]);
       }
-      drw_clr_create(drw, &drw->scheme[ColBg], termcolor[(j++ % 2) ? 8 : 1]);
+      drw_clr_create(drw, &drw->scheme[ColBg],
+                     (j++ % 2) ? selfgcolor : normbgcolor, alpha);
       drw_text(drw, 0, 0, i->w, bh, lrpad / 4 + is_icon * lrpad / 8, class, 0);
       drw_map(drw, i->win, 0, 0, i->w, bh);
       if (class)
@@ -3470,6 +3483,37 @@ int xerrorstart(Display *dpy, XErrorEvent *ee) {
   return -1;
 }
 
+void xinitvisual() {
+  XVisualInfo *infos;
+  XRenderPictFormat *fmt;
+  int nitems;
+  int i;
+
+  XVisualInfo tpl = {.screen = screen, .depth = 32, .class = TrueColor};
+  long masks = VisualScreenMask | VisualDepthMask | VisualClassMask;
+
+  infos = XGetVisualInfo(dpy, masks, &tpl, &nitems);
+  visual = NULL;
+  for (i = 0; i < nitems; i++) {
+    fmt = XRenderFindVisualFormat(dpy, infos[i].visual);
+    if (fmt->type == PictTypeDirect && fmt->direct.alphaMask) {
+      visual = infos[i].visual;
+      depth = infos[i].depth;
+      cmap = XCreateColormap(dpy, root, visual, AllocNone);
+      useargb = 1;
+      break;
+    }
+  }
+
+  XFree(infos);
+
+  if (!visual) {
+    visual = DefaultVisual(dpy, screen);
+    depth = DefaultDepth(dpy, screen);
+    cmap = DefaultColormap(dpy, screen);
+  }
+}
+
 Monitor *systraytomon(Monitor *m) {
   Monitor *t;
   int i, n;
@@ -3491,7 +3535,7 @@ void xrdb(const Arg *arg) {
   loadxrdb();
   int i;
   for (i = 0; i < LENGTH(colors); i++)
-    scheme[i] = drw_scm_create(drw, colors[i], 3);
+    scheme[i] = drw_scm_create(drw, colors[i], alphas[i], 3);
   focus(NULL);
   arrange(NULL);
 }
@@ -3570,10 +3614,11 @@ int main(int argc, char *argv[]) {
   if (!(xcon = XGetXCBConnection(dpy)))
     die("dwm: cannot get xcb connection\n");
   checkotherwm();
-  system("setbg -R");
   XrmInitialize();
   loadxrdb();
   load_xresources();
+  alpha = (unsigned int)(falpha * 255);
+  fonts[0] = ffont;
   setup();
 #ifdef __OpenBSD__
   if (pledge("stdio rpath proc exec", NULL) == -1)
