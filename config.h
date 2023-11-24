@@ -7,7 +7,7 @@
 /* appearance */
 static unsigned int borderpx = 2;      /* border pixel of windows */
 static unsigned int snap = 16;         /* snap pixel */
-static unsigned int fancytitlebar = 1; /* multi titles */
+static unsigned int fancytitlebar = 0; /* multi titles */
 static const unsigned int baralpha = OPAQUE;
 static unsigned int alpha = baralpha;
 static float falpha;
